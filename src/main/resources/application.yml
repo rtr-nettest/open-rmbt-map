@@ -1,0 +1,61 @@
+app:
+  defaultLanguage: en
+server:
+  port: 8080
+  servlet:
+    context-path: /RMBTStatisticServer
+spring:
+  application:
+    name: map-backend
+  datasource:
+    poolSize: 20
+    minIdle: 1
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${STATISTIC_DB_HOST}:${STATISTIC_DB_PORT}/${STATISTIC_DB_NAME}
+    username: ${STATISTIC_DB_USER}
+    password: ${STATISTIC_DB_PASSWORD}
+
+  #    tomcat:
+  #      test-while-idle: true
+  #      test-on-borrow: true
+  #      validation-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+java:
+  util:
+    PropertyResourceBundle:
+      encoding:UTF-8
+application-version:
+  host: rtr-api-dev
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    poolSize: 20
+    minIdle: 1
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${STATISTIC_DB_HOST}:${STATISTIC_DB_PORT}/${STATISTIC_DB_NAME}
+    username: ${STATISTIC_DB_USER}
+    password: ${STATISTIC_DB_PASSWORD}
+    tomcat:
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1
+
+application-version:
+  host: ${HOST_ID}
+
+redis:
+  host: ${STATISTIC_REDIS_HOST}
+  port: ${STATISTIC_REDIS_PORT}
+logging:
+  config: ${LOGGING_CONFIG_FILE_STATISTIC:classpath:logback.xml}

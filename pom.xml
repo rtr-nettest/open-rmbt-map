@@ -29,6 +29,7 @@
         <start-class>at.rtr.rmbt.map.MapServerConfiguration</start-class>
         <log4j2.version>2.16.0</log4j2.version>
         <jackson-version>2.15.2</jackson-version>
+        <hibernate-version>6.3.1.Final</hibernate-version>
     </properties>
     <dependencies>
         <dependency>
@@ -59,6 +60,17 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+            <version>${hibernate-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
