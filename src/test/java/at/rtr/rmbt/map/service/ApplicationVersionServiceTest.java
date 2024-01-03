@@ -1,7 +1,7 @@
 package at.rtr.rmbt.map.service;
 
 import at.rtr.rmbt.map.MapServerConfiguration;
-import at.rtr.rmbt.map.response.ApplicationVersionResponse;
+import at.rtr.rmbt.map.dto.ApplicationVersionResponse;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

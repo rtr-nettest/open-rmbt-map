@@ -1,4 +1,4 @@
-package at.rtr.rmbt.map.response;
+package at.rtr.rmbt.map.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

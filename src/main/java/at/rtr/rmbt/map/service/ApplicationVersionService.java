@@ -3,7 +3,7 @@ package at.rtr.rmbt.map.service;
 import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.model.Settings;
 import at.rtr.rmbt.map.repository.SettingsRepository;
-import at.rtr.rmbt.map.response.ApplicationVersionResponse;
+import at.rtr.rmbt.map.dto.ApplicationVersionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

@@ -2,7 +2,7 @@ package at.rtr.rmbt.map.controller;
 
 
 import at.rtr.rmbt.map.constant.URIConstants;
-import at.rtr.rmbt.map.response.ApplicationVersionResponse;
+import at.rtr.rmbt.map.dto.ApplicationVersionResponse;
 import at.rtr.rmbt.map.service.ApplicationVersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

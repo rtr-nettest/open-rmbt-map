@@ -2,7 +2,7 @@ package at.rtr.rmbt.map.controller;
 
 import at.rtr.rmbt.map.TestUtils;
 import at.rtr.rmbt.map.constant.URIConstants;
-import at.rtr.rmbt.map.response.ApplicationVersionResponse;
+import at.rtr.rmbt.map.dto.ApplicationVersionResponse;
 import at.rtr.rmbt.map.service.ApplicationVersionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
