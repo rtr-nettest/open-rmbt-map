@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.5</version>
+        <version>3.1.7</version>
         <relativePath/>
     </parent>
 
@@ -30,6 +30,7 @@
         <log4j2.version>2.16.0</log4j2.version>
         <jackson-version>2.15.2</jackson-version>
         <hibernate-version>6.3.1.Final</hibernate-version>
+        <spring-version>3.1.7</spring-version>
     </properties>
     <dependencies>
         <dependency>
@@ -68,7 +69,12 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <!--<scope>runtime</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring-version}</version>
         </dependency>
 
     </dependencies>
@@ -98,6 +104,14 @@
                             <version>${org.projectlombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>6.0.0</version>
+                <configuration>
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
                 </configuration>
             </plugin>
         </plugins>

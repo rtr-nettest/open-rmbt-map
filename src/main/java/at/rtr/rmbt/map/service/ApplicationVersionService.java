@@ -1,16 +1,17 @@
 package at.rtr.rmbt.map.service;
 
-import at.rtr.rmbt.map.response.ApplicationVersionResponse;
 import at.rtr.rmbt.map.constant.Constants;
-
+import at.rtr.rmbt.map.model.Settings;
+import at.rtr.rmbt.map.repository.SettingsRepository;
+import at.rtr.rmbt.map.response.ApplicationVersionResponse;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ApplicationVersionService {
+    final String SYSTEM_UUID_KEY = "system_UUID";
 
     @Value("${git.branch}")
     private String branch;
@@ -22,6 +23,8 @@ public class ApplicationVersionService {
     private String applicationHost;
 
 
+    private final SettingsRepository settingsRepository;
+
     public ApplicationVersionResponse getApplicationVersion() {
         return ApplicationVersionResponse.builder()
                 .version(String.format(Constants.VERSION_TEMPLATE, branch, describe))
@@ -31,9 +34,8 @@ public class ApplicationVersionService {
     }
 
     private String getSystemUUID() {
-        /*return settingsRepository.findFirstByKeyAndLangIsNullOrKeyAndLangOrderByLang(AdminSettingConfig.SYSTEM_UUID_KEY, AdminSettingConfig.SYSTEM_UUID_KEY, StringUtils.EMPTY)
+        return settingsRepository.findFirstByKey(SYSTEM_UUID_KEY)
                 .map(Settings::getValue)
-                .orElse(null);*/
-        return "test";
+                .orElse(null);
     }
 }
