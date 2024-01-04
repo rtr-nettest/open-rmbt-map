@@ -521,7 +521,7 @@ final public class MapServerOptions
             put("operator", new MapFilter()
             {
                 @Override
-                SQLFilter getFilter(final String input)
+                public SQLFilter getFilter(final String input)
                 {
                     if (StringUtils.hasText(input))
                         return null;
@@ -543,7 +543,7 @@ final public class MapServerOptions
             put("provider", new MapFilter()
             {
                 @Override
-                SQLFilter getFilter(final String input)
+                public SQLFilter getFilter(final String input)
                 {
                     if (StringUtils.hasText(input))
                         return null;
@@ -562,7 +562,7 @@ final public class MapServerOptions
             put("technology", new MapFilter()
             {
             	@Override
-            	SQLFilter getFilter(final String input)
+            	public SQLFilter getFilter(final String input)
             	{ // do not filter if empty
             		if (StringUtils.hasText(input))
             			return null;
@@ -609,7 +609,7 @@ final public class MapServerOptions
             put("period", new MapFilter()
             {
                 @Override
-                SQLFilter getFilter(final String input)
+                public SQLFilter getFilter(final String input)
                 {
                     if (StringUtils.hasText(input))
                         return null;
@@ -640,7 +640,7 @@ final public class MapServerOptions
             put("age", new MapFilter()
             {
                 @Override
-                SQLFilter getFilter(final String input)
+                public SQLFilter getFilter(final String input)
                 {
                     if (StringUtils.hasText(input))
                         return null;
@@ -671,7 +671,7 @@ final public class MapServerOptions
             put("user_server_selection", new MapFilter()
             {
             	@Override
-                SQLFilter getFilter(final String input)
+                public SQLFilter getFilter(final String input)
                 {            	
         			return new SQLFilter("t.user_server_selection = ?") {
 
@@ -787,9 +787,9 @@ final public class MapServerOptions
         }
     }
     
-    static abstract class MapFilter
+    public static abstract class MapFilter
     {
-        abstract SQLFilter getFilter(String input);
+        public abstract SQLFilter getFilter(String input);
     }
     
     public static class StaticMapFilter extends MapFilter
@@ -800,7 +800,7 @@ final public class MapServerOptions
             filter = new SQLFilter(where);
         }
         @Override
-        SQLFilter getFilter(String input)
+        public SQLFilter getFilter(String input)
         {
             return filter;
         }

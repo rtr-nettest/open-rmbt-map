@@ -203,4 +203,31 @@ public class HelperFunctions {
             return "illegal_ip";
         }
     }
+
+    public static int valueToColor(final int[] colors, final double[] intervals, final double value) {
+        int idx = -1;
+        for (int i = 0; i < intervals.length; i++)
+            if (value < intervals[i]) {
+                idx = i;
+                break;
+            }
+        if (idx == 0)
+            return colors[0];
+        if (idx == -1)
+            return colors[colors.length - 1];
+
+        final double factor = (value - intervals[idx - 1]) / (intervals[idx] - intervals[idx - 1]);
+
+        final int c0 = colors[idx - 1];
+        final int c1 = colors[idx];
+
+        final int c0r = c0 >> 16;
+        final int c0g = c0 >> 8 & 0xff;
+        final int c0b = c0 & 0xff;
+
+        final int r = (int) (c0r + ((c1 >> 16) - c0r) * factor);
+        final int g = (int) (c0g + ((c1 >> 8 & 0xff) - c0g) * factor);
+        final int b = (int) (c0b + ((c1 & 0xff) - c0b) * factor);
+        return r << 16 | g << 8 | b;
+    }
 }

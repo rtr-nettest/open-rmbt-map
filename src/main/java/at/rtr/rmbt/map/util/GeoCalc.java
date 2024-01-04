@@ -16,6 +16,8 @@
  ******************************************************************************/
 package at.rtr.rmbt.map.util;
 
+import at.rtr.rmbt.map.service.TileGenerationService;
+
 public class GeoCalc
 {
     
@@ -34,22 +36,22 @@ public class GeoCalc
         return MAX_EXTENT * 2 / tileSize / powZoom;
     }
     
-    /*public static TileRestlet.DBox xyToMeters(final int tileSize, final int x, final int y, final int zoom)
+    public static TileGenerationService.DBox xyToMeters(final int tileSize, final int x, final int y, final int zoom)
     {
-        final TileRestlet.DBox result = new TileRestlet.DBox();
+        final TileGenerationService.DBox result = new TileGenerationService.DBox();
         
         final long powZoom = 1 << zoom;
-        result.res = MAX_EXTENT * 2 / tileSize / powZoom;
+        result.setRes(MAX_EXTENT * 2 / tileSize / powZoom);
         final double w = MAX_EXTENT * 2 / powZoom;
         final double myY = powZoom - 1 - y;
         
-        result.x1 = x * w - MAX_EXTENT;
-        result.y1 = myY * w - MAX_EXTENT;
-        result.x2 = (x + 1) * w - MAX_EXTENT;
-        result.y2 = (myY + 1) * w - MAX_EXTENT;
+        result.setX1(x * w - MAX_EXTENT);
+        result.setY1(myY * w - MAX_EXTENT);
+        result.setX2((x + 1) * w - MAX_EXTENT);
+        result.setY2((myY + 1) * w - MAX_EXTENT);
         
         return result;
-    }*/
+    }
     
     public static double latToMeters(final double lat)
     {

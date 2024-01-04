@@ -12,6 +12,27 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class TilesRequest {
+    @JsonProperty("zoom")
+    private String zoom;
+
+    @JsonProperty("x")
+    private String x;
+
+    @JsonProperty("y")
+    private String y;
+
     @JsonProperty("statistical_method")
     Float statisticalMethod;
+
+    @JsonProperty("size")
+    Integer size;
+
+    @JsonProperty("map_options")
+    String mapOptions = "mobile/download";
+
+    @JsonProperty("developerCode")
+    String DeveloperCode;
+
+    @JsonProperty("transparency")
+    Double transparency;
 }
