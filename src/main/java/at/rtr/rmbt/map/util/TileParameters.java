@@ -239,4 +239,19 @@ public class TileParameters {
 
     }
 
+    public static class ShapeTileParameters extends TileParameters
+    {
+        public ShapeTileParameters(Path path, TilesRequest params)
+        {
+            super(path, params, 0.4);
+        }
+
+        @Override
+        public boolean isNoCache()
+        {
+            return false;
+        }
+    }
+
+
 }
