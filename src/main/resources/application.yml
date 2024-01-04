@@ -1,5 +1,6 @@
 app:
   defaultLanguage: en
+  supportedLanguages: de,en,hr,sv,pl,es,is,fr,nb,cs
 server:
   port: 8080
   servlet:
@@ -22,7 +23,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: false
+    show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   jackson:
     deserialization:
