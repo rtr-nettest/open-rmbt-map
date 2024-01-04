@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @ToString
@@ -35,4 +37,16 @@ public class TilesRequest {
 
     @JsonProperty("transparency")
     Double transparency;
+
+    @JsonProperty("point_diameter")
+    Double pointDiameter;
+
+    @JsonProperty("no_fill")
+    Boolean noFill;
+
+    @JsonProperty("no_color")
+    Boolean noColor;
+
+    @JsonProperty("highlight")
+    UUID highlight;
 }

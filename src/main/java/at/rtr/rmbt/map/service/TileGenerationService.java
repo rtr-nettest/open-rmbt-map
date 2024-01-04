@@ -1,5 +1,6 @@
 package at.rtr.rmbt.map.service;
 
+import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
 import at.rtr.rmbt.map.util.GeoCalc;
 import at.rtr.rmbt.map.util.MapServerOptions;
@@ -67,20 +68,31 @@ public abstract class TileGenerationService {
     }
 
 
-    public byte[] generateSingleTile(TilesRequest request) {
+    public byte[] generateSingleTile(TilesRequest request, Constants.TILE_TYPE tileType) {
         final String zoomStr = request.getZoom();
         final String xStr = request.getX();
         final String yStr = request.getY();
 
         final Path path = new Path(zoomStr, xStr, yStr, ""); //"Path" parameter seems obsolete with Spring Boot
-        final TileParameters parser = new TileParameters(path, request, 0.5f);
+        TileParameters parser = null;
+        switch(tileType) {
+            case POINT -> {
+                 parser = new TileParameters.PointTileParameters(path, request);
+            }
+            case HEATMAP -> {
+                 parser = new TileParameters(path, request, 0.5f);
+            }
+            case SHAPE -> {
+                 parser = new TileParameters(path, request, 0.5f);
+            }
+        }
 
         byte[] tile = getTile(parser);
         return tile;
     }
 
     //get a specific tile, try getting from cache, otherwise from subclass
-    private byte[] getTile(final TileParameters p)
+    public byte[] getTile(final TileParameters p)
     {
         boolean useCache = false;
         //if (p.isNoCache())
@@ -181,6 +193,8 @@ public abstract class TileGenerationService {
         final byte[] data = generateTile(p, tileSizeIdx, path.getZoom(), box, mo, filters, quantile);
         return data;
     }
+
+    protected abstract TileParameters getTileParameters(TileParameters.Path path, TilesRequest request);
 
     protected abstract byte[] generateTile(TileParameters params, int tileSizeIdx, int zoom, DBox box, MapServerOptions.MapOption mo,
                                            List<MapServerOptions.SQLFilter> filters, float quantile);

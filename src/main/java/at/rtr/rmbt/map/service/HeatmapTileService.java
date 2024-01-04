@@ -1,5 +1,6 @@
 package at.rtr.rmbt.map.service;
 
+import at.rtr.rmbt.map.dto.TilesRequest;
 import at.rtr.rmbt.map.model.TilesQueryResult;
 import at.rtr.rmbt.map.util.MapServerOptions;
 import at.rtr.rmbt.map.util.TileParameters;
@@ -101,6 +102,11 @@ public class HeatmapTileService extends TileGenerationService {
         }
     }
 
+
+    @Override
+    protected TileParameters getTileParameters(TileParameters.Path path, TilesRequest params) {
+        return new TileParameters(path, params, 0.75);
+    }
 
     @Override
     protected byte[] generateTile(TileParameters params, int tileSizeIdx, int zoom, DBox box, MapServerOptions.MapOption mo, List<MapServerOptions.SQLFilter> filters, float quantile) {

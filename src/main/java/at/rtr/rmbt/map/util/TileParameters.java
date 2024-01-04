@@ -5,6 +5,7 @@ import at.rtr.rmbt.map.dto.TilesRequest;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,30 +147,96 @@ public class TileParameters {
         return transparency;
     }
 
-    /*public abstract boolean isNoCache();
-
-    protected static final Funnel<Map.Entry<String, String>> FILTER_MAP_FUNNEL_ENTRY = new Funnel<Map.Entry<String, String>>() {
-        @Override
-        public void funnel(Map.Entry<String, String> o, PrimitiveSink into) {
-            into
-                    .putUnencodedChars(o.getKey())
-                    .putChar(':')
-                    .putUnencodedChars(Strings.nullToEmpty(o.getValue()));
-        }
+    public boolean isNoCache()  {
+        return false;
     };
-    protected static final Funnel<Iterable<? extends Map.Entry<String, String>>> FILTER_MAP_FUNNEL
-            = Funnels.sequentialFunnel(FILTER_MAP_FUNNEL_ENTRY);
 
-    @Override
-    public void funnel(TileParameters o, PrimitiveSink into) {
-        into
-                .putUnencodedChars(o.getClass().getCanonicalName())
-                .putInt(o.size)
-                .putUnencodedChars(o.mapOption)
-                .putFloat(o.quantile)
-                .putDouble(o.transparency)
-                .putUnencodedChars(Strings.nullToEmpty(o.developerCode));
-        o.path.funnel(o.path, into);
-        FILTER_MAP_FUNNEL.funnel(o.filterMap.entrySet(), into);
-    }*/
+
+
+    public static class PointTileParameters extends TileParameters
+    {
+        protected final double pointDiameter;
+        protected final boolean noFill;
+        protected final boolean noColor;
+        protected final UUID highlight;
+        protected final PointTileParameters genericParameters; // same without highlight for caching
+
+        public PointTileParameters(Path path, TilesRequest params)
+        {
+            this(path, params, false);
+        }
+
+        protected PointTileParameters(Path path, TilesRequest params, boolean generic)
+        {
+            super(path, params, 0.6);
+
+            double _diameter = 8.0;
+            if (params.getPointDiameter() != null) {
+                _diameter = params.getPointDiameter();
+            }
+            pointDiameter = _diameter;
+
+            boolean _noFill = false;
+            if (params.getNoFill() != null) {
+                _noFill = params.getNoFill();
+            }
+            noFill = _noFill;
+
+            boolean _noColor = false;
+            if (params.getNoColor() != null) {
+                _noColor = params.getNoColor();
+            }
+            noColor = _noColor;
+
+            if (generic)
+                highlight = null;
+            else {
+
+                UUID hightlightUUID = null;
+                if (params.getHighlight() != null) {
+                    hightlightUUID = params.getHighlight();
+                }
+                highlight = hightlightUUID;
+            }
+
+            if (highlight == null)
+                genericParameters = null;
+            else
+                genericParameters = new PointTileParameters(path, params, true);
+        }
+
+        public double getPointDiameter()
+        {
+            return pointDiameter;
+        }
+
+        public boolean isNoFill()
+        {
+            return noFill;
+        }
+
+        public boolean isNoColor()
+        {
+            return noColor;
+        }
+
+        public UUID getHighlight()
+        {
+            return highlight;
+        }
+
+        @Override
+        public boolean isNoCache()
+        {
+            return highlight != null;
+        }
+
+        public PointTileParameters getGenericParameters()
+        {
+            return genericParameters;
+        }
+
+
+    }
+
 }

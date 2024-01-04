@@ -17,17 +17,16 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest
 @ContextConfiguration(classes = MapServerConfiguration.class)
 @ActiveProfiles("test")
-class HeatmapTileServiceTest {
-
+class PointTileServiceTest {
     @Autowired
-    private HeatmapTileService heatmapTileService;
+    private PointTileService pointTileService;
 
     @Test
-    void testGenerateHeatmapTile() {
+    void generateTile() {
         //https://m-cloud.netztest.at/RMBTMapServer/tiles/heatmap/7/70/44.png?null&statistical_method=0.5&period=180&map_options=mobile/download
 
         TilesRequest tr = new TilesRequest("7","70","44",0.5f,null,"mobile/download", null, null, null, null, null, null);
-        byte[] bytes = heatmapTileService.generateSingleTile(tr, Constants.TILE_TYPE.HEATMAP);
+        byte[] bytes = pointTileService.generateSingleTile(tr, Constants.TILE_TYPE.POINT);
         System.out.println("Tile generated of size " + bytes.length);
     }
 }
