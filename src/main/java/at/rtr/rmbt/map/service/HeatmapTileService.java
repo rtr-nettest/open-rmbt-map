@@ -121,7 +121,7 @@ public class HeatmapTileService extends TileGenerationService {
             whereSQL.append(" AND ").append(sf.getWhere());
 
         final String sql = String.format("SELECT count(\"%1$s\") count,"
-                + " quantile(\"%1$s\",?) val,"
+                + " percentile_disc(?) WITHIN GROUP (ORDER BY \"%1$s\") AS val,"
                 + " ST_X(ST_SnapToGrid(location, ?,?,?,?)) gx,"
                 + " ST_Y(ST_SnapToGrid(location, ?,?,?,?)) gy"
                 + " FROM v_test2 t"

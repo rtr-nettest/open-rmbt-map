@@ -67,7 +67,7 @@ public class ShapeTileService extends TileGenerationService {
                                 //output has to be transformed to EPSG:3857 for Browsers
                                 + " (CAST (ST_SnapToGrid(ST_Transform(ST_intersection(p.geom, box.box), 3857), ?,?,?,?) AS VARCHAR)) AS geom," //Geometry seems to not be deserialized
                                 + " count(\"%1$s\") count,"
-                                + " quantile(\"%1$s\",?) val"
+                                + " percentile_disc(?) WITHIN GROUP (ORDER BY \"%1$s\") AS val"
                                 + " FROM box, bev_vgd p"
                                 + " JOIN test_location tl ON tl.kg_nr_bev=p.kg_nr_int"
                                 + " JOIN v_test2 t ON t.open_test_uuid = tl.open_test_uuid"
