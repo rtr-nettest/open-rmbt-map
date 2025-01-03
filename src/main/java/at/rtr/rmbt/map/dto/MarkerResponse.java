@@ -26,7 +26,7 @@ public class MarkerResponse {
         @JsonProperty("lat")
         Double latitude;
 
-        @JsonProperty("long")
+        @JsonProperty("lon")
         Double longitude;
 
         @JsonProperty("open_test_uuid")
@@ -64,10 +64,6 @@ public class MarkerResponse {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         @JsonProperty
         Integer classification;
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        @JsonProperty("network_type_label")
-        String networkTypeLabel;
     }
 
     @Getter

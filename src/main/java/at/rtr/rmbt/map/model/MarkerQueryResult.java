@@ -48,7 +48,9 @@ public class MarkerQueryResult {
     Double y;
     Timestamp time;
     String timezone;
-    UUID uuid;
+
+    @Column(name = "uuid", nullable = true)
+    Object uuid;
     UUID openTestUuid;
 
     Integer speedDownload;

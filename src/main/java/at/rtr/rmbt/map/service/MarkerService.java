@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MarkerService {
 
 
@@ -35,7 +37,7 @@ public class MarkerService {
     private static int MAX_PROVIDER_LENGTH = 22;
     private static int CLICK_RADIUS = 10;
 
-    public MarkerResponse getMarkersForPoint(MarkerRequest parameters) throws SQLException {
+    public MarkerResponse getMarkersForPoint(MarkerRequest parameters) {
         ResourceBundle labels;
         String language;
         MarkerResponse answer = new MarkerResponse();
@@ -191,8 +193,8 @@ public class MarkerService {
                                 + " COALESCE(mprov.shortname, t.network_operator_name, prov.shortname, msim.shortname,msim.name,"
                                 + "    prov.name, mprov.name, t.public_ip_as_name, network_sim_operator) \"providerName\", "
                                 + " COALESCE(mnwk.shortname,mnwk.name) \"mobileNetworkName\","
-                                + " COALESCE(msim.shortname,msim.name) \"mobileSimName\""
-                                + (highlightUUID == null ? "NULL uid, NULL uuid" : " , c.uid, c.uuid")
+                                + " COALESCE(msim.shortname,msim.name) \"mobileSimName\", "
+                                + (highlightUUID == null ? " NULL AS uid, NULL AS uuid " : " c.uid, c.uuid")
                                 + " FROM v_test2 t"
                                 + " LEFT JOIN mccmnc2name mnwk ON t.mobile_network_id=mnwk.uid"
                                 + " LEFT JOIN mccmnc2name msim ON t.mobile_sim_id=msim.uid"
@@ -214,20 +216,28 @@ public class MarkerService {
 
                 int i = 1;
 
-                if (highlightUUID != null)
+                if (highlightUUID != null) {
                     ps.setParameter(i++, highlightUUID);
+                }
+
 
                 // filter by location if not selected by open_test_uuid
                 if (requestOpenTestUUID == null) {
                     for (final MapServerOptions.SQLFilter sf : filters) {
-                        i = sf.fillParams(i, ps);
+                        try {
+                            i = sf.fillParams(i, ps);
+                        } catch (SQLException e) {
+                            log.error("Error filling in parameter ", e);
+                        }
                     }
                     ps.setParameter(i++, geo_x_min);
                     ps.setParameter(i++, geo_y_min);
                     ps.setParameter(i++, geo_x_max);
                     ps.setParameter(i++, geo_y_max);
-                } else
+                } else {
                     ps.setParameter(i++, requestOpenTestUUID);
+                }
+
 
                 //System.out.println("SQL: " + ps.toString());
 
@@ -352,9 +362,8 @@ public class MarkerService {
                         MarkerResponse.SingleMarkerMetricItem networkInfoItem = new MarkerResponse.SingleMarkerMetricItem();
                         networkInfoItem.setTitle(labels.getString("RESULT_NETWORK_TYPE"));
                         networkInfoItem.setValue(HelperFunctions.getNetworkTypeName(networkType));
-                        networkInfoItem.setNetworkTypeLabel(HelperFunctions.getNetworkTypeName(networkType));
-
                         markerResponse.getNetwork().add(networkInfoItem);
+                        networkInfo.setNetworkTypeLabel(HelperFunctions.getNetworkTypeName(networkType));
 
 
                         if (networkType == 98 || networkType == 99) // mobile wifi or browser

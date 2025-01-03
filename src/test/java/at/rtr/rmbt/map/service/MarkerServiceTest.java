@@ -38,4 +38,18 @@ class MarkerServiceTest {
 
         System.out.println(markersForPoint);
     }
+
+    @Test
+    void testGetSpecificMarker() throws SQLException {
+        MarkerRequest mr = new MarkerRequest("de",
+                "93f282f8-7047-49ef-985a-ef9898d5c474",
+                new MarkerRequest.MarkerRequestCoordinates(null, null, null, null, null, null),
+                new MarkerRequest.MarkerRequestMapOptions("mobile/download"),
+                null,
+                new CapabilitiesRequest(new CapabilitiesRequest.ClassificationRequest(4),null));
+
+        MarkerResponse markersForPoint = markerService.getMarkersForPoint(mr);
+
+        System.out.println(markersForPoint);
+    }
 }
