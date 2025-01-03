@@ -52,6 +52,12 @@ public class TilesRequest {
     @JsonProperty("highlight")
     UUID highlight;
 
-    @JsonProperty("period")
+
+    //Map Filters from MapServerOptions.MapFilterMap
+    String operator;
+    String provider;
+    String technology;
     Integer period;
+    Integer age;
+    String userServerSelection;
 }

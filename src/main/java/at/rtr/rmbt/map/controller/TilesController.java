@@ -2,7 +2,6 @@ package at.rtr.rmbt.map.controller;
 
 import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.constant.URIConstants;
-import at.rtr.rmbt.map.dto.ApplicationVersionResponse;
 import at.rtr.rmbt.map.dto.TilesRequest;
 import at.rtr.rmbt.map.service.HeatmapTileService;
 import at.rtr.rmbt.map.service.PointTileService;
@@ -33,18 +32,25 @@ public class TilesController {
                            @PathVariable int x,
                            @PathVariable int y,
                            @RequestParam(name = "statistical_method", required = false) Float statisticalMethod,
-                           @RequestParam(name="size", required = false) Integer size,
-                           @RequestParam(name="map_options") String mapOptions,
-                           @RequestParam(name="developerCode", required = false) String developerCode,
-                           @RequestParam(name="transparency", required = false) Double transparency,
-                           @RequestParam(name="point_diameter", required = false) Double pointDiameter,
-                           @RequestParam(name="no_fill", required = false) Boolean noFill,
-                           @RequestParam(name="no_color", required = false) Boolean noColor,
-                           @RequestParam(name="highlight", required = false) UUID highlight,
-                           @RequestParam(name="period", required = false) Integer period) {
+                           @RequestParam(name = "size", required = false) Integer size,
+                           @RequestParam(name = "map_options") String mapOptions,
+                           @RequestParam(name = "developerCode", required = false) String developerCode,
+                           @RequestParam(name = "transparency", required = false) Double transparency,
+                           @RequestParam(name = "point_diameter", required = false) Double pointDiameter,
+                           @RequestParam(name = "no_fill", required = false) Boolean noFill,
+                           @RequestParam(name = "no_color", required = false) Boolean noColor,
+                           @RequestParam(name = "hightlight", required = false) UUID hightlightUuid,
+                           @RequestParam(name = "operator", required = false) String operator,
+                           @RequestParam(name = "provider", required = false) String provider,
+                           @RequestParam(name = "technology", required = false) String technology,
+                           @RequestParam(name = "period", required = false) Integer period,
+                           @RequestParam(name = "age", required = false) Integer age,
+                           @RequestParam(name = "user_server_selection", required = false) String userServerSelection) {
         TilesRequest request = new TilesRequest(
                 zoom, x, y,
-                statisticalMethod, size, mapOptions, developerCode, transparency, pointDiameter, noFill, noColor, highlight, period
+                statisticalMethod, size, mapOptions, developerCode, transparency, pointDiameter,
+                noFill, noColor, hightlightUuid,
+                operator, provider, technology, period, age, userServerSelection
         );
 
         switch(type) {

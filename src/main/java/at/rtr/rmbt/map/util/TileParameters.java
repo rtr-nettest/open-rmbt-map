@@ -120,10 +120,26 @@ public class TileParameters {
         transparency = _transparency;
 
         final TreeMap<String, String> _filterMap = new TreeMap<>();
-        /*for (final Parameter param : params) {
-            if (MapServerOptions.isValidFilter(param.getName()))
-                _filterMap.put(param.getName(), param.getValue());
-        }*/ /* @TODO ThS */
+
+        if (params.getOperator() != null) {
+            _filterMap.put("operator", params.getOperator());
+        }
+        if (params.getProvider() != null) {
+            _filterMap.put("provider", params.getProvider());
+        }
+        if (params.getTechnology() != null) {
+            _filterMap.put("technology", params.getProvider());
+        }
+        if (params.getPeriod() != null) {
+            _filterMap.put("period", params.getPeriod().toString());
+        }
+        if (params.getAge() != null) {
+            _filterMap.put("age", params.getAge().toString());
+        }
+        if (params.getUserServerSelection() != null) {
+            _filterMap.put("user_server_selection", params.getUserServerSelection());
+        }
+
         filterMap = Collections.unmodifiableMap(_filterMap);
     }
 

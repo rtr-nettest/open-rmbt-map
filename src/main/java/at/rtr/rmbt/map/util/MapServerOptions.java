@@ -515,15 +515,13 @@ final public class MapServerOptions
     
     protected static final SQLFilter accuracyMapFilter = new SQLFilter("t.geo_accuracy < 2000"); // 2km
     
-    protected static final Map<String, MapFilter> mapFilterMap = Collections.unmodifiableMap(new LinkedHashMap<String, MapFilter>()
-    {
-        {
-            put("operator", new MapFilter()
+    protected static final Map<String, MapFilter> mapFilterMap = Map.of(
+            "operator", new MapFilter()
             {
                 @Override
                 public SQLFilter getFilter(final String input)
                 {
-                    if (StringUtils.hasText(input))
+                    if (!StringUtils.hasText(input))
                         return null;
                     if (input.equals("other"))
                         return new SQLFilter("mobile_provider_id IS NULL");
@@ -538,14 +536,13 @@ final public class MapServerOptions
                             }
                         };
                 }
-            });
-            
-            put("provider", new MapFilter()
+            },
+            "provider", new MapFilter()
             {
                 @Override
                 public SQLFilter getFilter(final String input)
                 {
-                    if (StringUtils.hasText(input))
+                    if (!StringUtils.hasText(input))
                         return null;
                     return new SQLFilter("provider_id=?")
                     {
@@ -557,14 +554,14 @@ final public class MapServerOptions
                         }
                     };
                 }
-            });
-
-            put("technology", new MapFilter()
+            }
+            ,
+            "technology", new MapFilter()
             {
             	@Override
             	public SQLFilter getFilter(final String input)
             	{ // do not filter if empty
-            		if (StringUtils.hasText(input))
+            		if (!StringUtils.hasText(input))
             			return null;
             		try
             		{
@@ -604,14 +601,13 @@ final public class MapServerOptions
             			return null;
             		}
             	}
-            });
-
-            put("period", new MapFilter()
+            },
+            "period", new MapFilter()
             {
                 @Override
                 public SQLFilter getFilter(final String input)
                 {
-                    if (StringUtils.hasText(input))
+                    if (!StringUtils.hasText(input))
                         return null;
                     try
                     {
@@ -635,14 +631,13 @@ final public class MapServerOptions
                         return null;
                     }
                 }
-            });
-            
-            put("age", new MapFilter()
+            },
+            "age", new MapFilter()
             {
                 @Override
                 public SQLFilter getFilter(final String input)
                 {
-                    if (StringUtils.hasText(input))
+                    if (!StringUtils.hasText(input))
                         return null;
                     try
                     {
@@ -666,9 +661,8 @@ final public class MapServerOptions
                         return null;
                     }
                 }
-            });
-            
-            put("user_server_selection", new MapFilter()
+            },
+            "user_server_selection", new MapFilter()
             {
             	@Override
                 public SQLFilter getFilter(final String input)
@@ -684,37 +678,7 @@ final public class MapServerOptions
         			};
                 }
             });
-            
-//            put("device", new MapFilter()
-//            {
-//                @Override
-//                SQLFilter getFilter(final String input)
-//                {
-//                    if (Strings.isNullOrEmpty(input))
-//                        return null;
-//                    final String[] devices = input.split(";");
-//                    final StringBuilder builder = new StringBuilder("model IN (");
-//                    for (int i = 0; i < devices.length; i++)
-//                    {
-//                        if (i > 0)
-//                            builder.append(',');
-//                        builder.append('?');
-//                    }
-//                    builder.append(')');
-//                    return new SQLFilter(builder.toString())
-//                    {
-//                        @Override
-//                        int fillParams(int i, final PreparedStatement ps) throws SQLException
-//                        {
-//                            for (String device : devices)
-//                                ps.setString(i++, device);
-//                            return i;
-//                        }
-//                    };
-//                }
-//            });
-        }
-    });
+
     
     public static class MapOption
     {
