@@ -69,9 +69,9 @@ public abstract class TileGenerationService {
 
 
     public byte[] generateSingleTile(TilesRequest request, Constants.TILE_TYPE tileType) {
-        final String zoomStr = request.getZoom();
-        final String xStr = request.getX();
-        final String yStr = request.getY();
+        final Integer zoomStr = request.getZoom();
+        final Integer xStr = request.getX();
+        final Integer yStr = request.getY();
 
         final Path path = new Path(zoomStr, xStr, yStr, ""); //"Path" parameter seems obsolete with Spring Boot
         TileParameters parser = null;
@@ -168,8 +168,9 @@ public abstract class TileGenerationService {
     private byte[] generateTile(final TileParameters p, int tileSizeIdx)
     {
         final MapServerOptions.MapOption mo = MapServerOptions.getMapOptionMap().get(p.getMapOption());
-        if (mo == null)
+        if (mo == null) {
             throw new IllegalArgumentException();
+        }
 
         final List<MapServerOptions.SQLFilter> filters = new ArrayList<>(MapServerOptions.getDefaultMapFilters());
         for (final Map.Entry<String, String> entry : p.getFilterMap().entrySet())

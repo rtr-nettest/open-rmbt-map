@@ -1,11 +1,12 @@
 package at.rtr.rmbt.map.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
@@ -13,15 +14,16 @@ import java.util.UUID;
 @Setter
 @ToString
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TilesRequest {
     @JsonProperty("zoom")
-    private String zoom;
+    private Integer zoom;
 
     @JsonProperty("x")
-    private String x;
+    private Integer x;
 
     @JsonProperty("y")
-    private String y;
+    private Integer y;
 
     @JsonProperty("statistical_method")
     Float statisticalMethod;
@@ -33,7 +35,7 @@ public class TilesRequest {
     String mapOptions = "mobile/download";
 
     @JsonProperty("developerCode")
-    String DeveloperCode;
+    String developerCode;
 
     @JsonProperty("transparency")
     Double transparency;

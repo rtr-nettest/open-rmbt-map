@@ -4,7 +4,7 @@ app:
 server:
   port: 8080
   servlet:
-    context-path: /RMBTStatisticServer
+    context-path: /RMBTMapServer
 spring:
   application:
     name: map-backend

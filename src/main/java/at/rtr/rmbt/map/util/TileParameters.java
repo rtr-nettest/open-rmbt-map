@@ -1,5 +1,6 @@
 package at.rtr.rmbt.map.util;
 
+import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
 
 import java.util.Collections;
@@ -24,11 +25,11 @@ public class TileParameters {
     public final static class Path {
         protected final int zoom, x, y;
 
-        public Path(String zoomStr, String xStr, String yStr, String path) {
+        public Path(Integer zoomStr, Integer xStr, Integer yStr, String path) {
             if (zoomStr != null && xStr != null && yStr != null) {
-                zoom = Integer.valueOf(zoomStr);
-                x = Integer.valueOf(xStr);
-                y = Integer.valueOf(yStr);
+                zoom = zoomStr;
+                x = xStr;
+                y = yStr;
             } else {
                 if (path == null)
                     throw new IllegalArgumentException();
@@ -48,7 +49,7 @@ public class TileParameters {
                 throw new IllegalArgumentException();
         }
 
-        public Path(int zoom, int x, int y) {
+        public Path(Integer zoom, Integer x, Integer y) {
             this.zoom = zoom;
             this.x = x;
             this.y = y;
@@ -104,15 +105,18 @@ public class TileParameters {
         developerCode = params.getDeveloperCode();
 
         double _transparency = defaultTransparency;
-        if (params.getTransparency() != null)
+        if (params.getTransparency() != null) {
             try {
                 _transparency = params.getTransparency();
             } catch (final NumberFormatException e) {
             }
-        if (_transparency < 0)
+        }
+        if (_transparency < 0) {
             _transparency = 0;
-        if (_transparency > 1)
+        }
+        if (_transparency > 1) {
             _transparency = 1;
+        }
         transparency = _transparency;
 
         final TreeMap<String, String> _filterMap = new TreeMap<>();
@@ -168,7 +172,7 @@ public class TileParameters {
 
         protected PointTileParameters(Path path, TilesRequest params, boolean generic)
         {
-            super(path, params, 0.6);
+            super(path, params, Constants.POINT_DEFAULT_TRANSPARENCY);
 
             double _diameter = 8.0;
             if (params.getPointDiameter() != null) {
@@ -243,7 +247,7 @@ public class TileParameters {
     {
         public ShapeTileParameters(Path path, TilesRequest params)
         {
-            super(path, params, 0.4);
+            super(path, params, Constants.SHAPE_DEFAULT_TRANSPARENCY);
         }
 
         @Override
