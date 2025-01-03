@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -24,26 +26,56 @@ public class TilesController {
 
     ////https://m-cloud.netztest.at/RMBTMapServer/tiles/points/12/2232/1428.png?null&statistical_method=0.5&period=180&map_options=mobile/download
     @Operation(summary = "Get point tile for a specific point /zoom/x/y")
-    @GetMapping(value = URIConstants.TILES_POINT, produces = "image/png")
-    public byte[] getPointTiles(@PathVariable int zoom, @PathVariable int x, @PathVariable int y, TilesRequest parameters) {
-        TileParameters params = new TileParameters.PointTileParameters(new TileParameters.Path(zoom, x, y), parameters);
+    @GetMapping(value = URIConstants.TILES_ENDPOINT, produces = "image/png")
+    //Unfortunately, DTO with renaming params seems to not be supported, therefore this list
+    public byte[] getTiles(@PathVariable URIConstants.TILE_TYPE type,
+                           @PathVariable int zoom,
+                           @PathVariable int x,
+                           @PathVariable int y,
+                           @RequestParam(name = "statistical_method", required = false) Float statisticalMethod,
+                           @RequestParam(name="size", required = false) Integer size,
+                           @RequestParam(name="map_options") String mapOptions,
+                           @RequestParam(name="developerCode", required = false) String developerCode,
+                           @RequestParam(name="transparency", required = false) Double transparency,
+                           @RequestParam(name="point_diameter", required = false) Double pointDiameter,
+                           @RequestParam(name="no_fill", required = false) Boolean noFill,
+                           @RequestParam(name="no_color", required = false) Boolean noColor,
+                           @RequestParam(name="highlight", required = false) UUID highlight,
+                           @RequestParam(name="period", required = false) Integer period) {
+        TilesRequest request = new TilesRequest(
+                zoom, x, y,
+                statisticalMethod, size, mapOptions, developerCode, transparency, pointDiameter, noFill, noColor, highlight, period
+        );
 
+        switch(type) {
+            case points -> {
+                return this.getPointTiles(request);
+            }
+            case shapes -> {
+                return this.getShapeTiles(request);
+            }
+            case heatmap -> {
+                return this.getHeatmapTiles(request);
+            }
+        }
+        return null;
+    }
+
+
+
+
+    public byte[] getPointTiles(TilesRequest parameters) {
+        TileParameters params = new TileParameters.PointTileParameters(new TileParameters.Path(parameters.getZoom(), parameters.getX(), parameters.getY()), parameters);
         return this.pointTileService.getTile(params);
     }
 
-    @Operation(summary = "Get shape tile for a specific point /zoom/x/y")
-    @RequestMapping(method=RequestMethod.GET, value = URIConstants.TILES_SHAPE, produces = "image/png")
     public byte[] getShapeTiles(TilesRequest parameters) {
         TileParameters params = new TileParameters.ShapeTileParameters(new TileParameters.Path(parameters.getZoom(), parameters.getX(), parameters.getY()), parameters);
-
         return this.shapeTileService.getTile(params);
     }
 
-    @Operation(summary = "Get heatmap tile for a specific point /zoom/x/y")
-    @GetMapping(value = URIConstants.TILES_HEATMAP, produces = "image/png")
-    public byte[] getHeatmapTiles(@PathVariable int zoom, @PathVariable int x, @PathVariable int y, TilesRequest parameters) {
-        TileParameters params = new TileParameters(new TileParameters.Path(zoom, x, y), parameters, Constants.HEATMAP_DEFAULT_TRANSPARENCY);
-
+    public byte[] getHeatmapTiles(TilesRequest parameters) {
+        TileParameters params = new TileParameters(new TileParameters.Path(parameters.getZoom(), parameters.getX(), parameters.getY()), parameters, Constants.HEATMAP_DEFAULT_TRANSPARENCY);
         return this.pointTileService.getTile(params);
     }
 

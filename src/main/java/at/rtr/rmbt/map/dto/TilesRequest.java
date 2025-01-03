@@ -51,4 +51,7 @@ public class TilesRequest {
 
     @JsonProperty("highlight")
     UUID highlight;
+
+    @JsonProperty("period")
+    Integer period;
 }
