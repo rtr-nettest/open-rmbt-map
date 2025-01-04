@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 final public class MapServerOptions
 {
@@ -294,8 +295,10 @@ final public class MapServerOptions
 
 
     @Getter
-    protected static final Map<String, MapOption> mapOptionMap = Map.ofEntries(
-            Map.entry("mobile/download",
+    protected static final Map<String, MapOption> mapOptionMap =  new LinkedHashMap<String, MapOption>()
+    {
+        {
+            put("mobile/download",
                     new MapOption("speed_download",
                             "speed_download_log",
                             "speed_download is not null AND network_type not in (0, 97, 98, 99)",
@@ -347,21 +350,22 @@ final public class MapServerOptions
                             Classification.THRESHOLD_DOWNLOAD,
                             Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
                             "heatmap",
-                            false)),
+                            false));
 
-            Map.entry("mobile/upload", new MapOption("speed_upload",
-                    "speed_upload_log",
-                    "speed_upload is not null AND network_type not in (0, 97, 98, 99)",
-                    colors_rgb,
-                    values_upload,
-                    captions_upload,
-                    Classification.THRESHOLD_UPLOAD,
-                    Classification.THRESHOLD_UPLOAD_CAPTIONS,
-                    "heatmap",
-                    false)),
+            put("mobile/upload",
+                    new MapOption("speed_upload",
+                            "speed_upload_log",
+                            "speed_upload is not null AND network_type not in (0, 97, 98, 99)",
+                            colors_rgb,
+                            values_upload,
+                            captions_upload,
+                            Classification.THRESHOLD_UPLOAD,
+                            Classification.THRESHOLD_UPLOAD_CAPTIONS,
+                            "heatmap",
+                            false));
 
 
-            Map.entry("mobile/ping",
+            put("mobile/ping",
                     new MapOption("ping_median",
                             "ping_median_log",
                             "ping_median is not null AND network_type not in (0, 97, 98, 99)",
@@ -371,9 +375,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_PING,
                             Classification.THRESHOLD_PING_CAPTIONS,
                             "heatmap",
-                            true)),
+                            true));
 
-            Map.entry("mobile/signal",
+            put("mobile/signal",
                     new MapOption("merged_signal",
                             "merged_signal is not null AND network_type not in (0, 97, 98, 99)",
                             colors_rgb,
@@ -382,21 +386,20 @@ final public class MapServerOptions
                             Classification.THRESHOLD_SIGNAL_MOBILE,
                             Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
                             "heatmap",
-                            false)),
+                            false));
 
-            Map.entry("wifi/download",
-                    new MapOption("speed_download",
-                            "speed_download_log",
-                            "speed_download is not null AND network_type = 99",
-                            colors_rgb,
-                            values_download,
-                            captions_download,
-                            Classification.THRESHOLD_DOWNLOAD,
-                            Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
-                            "heatmap",
-                            false)),
+            put("wifi/download", new MapOption("speed_download",
+                    "speed_download_log",
+                    "speed_download is not null AND network_type = 99",
+                    colors_rgb,
+                    values_download,
+                    captions_download,
+                    Classification.THRESHOLD_DOWNLOAD,
+                    Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
+                    "heatmap",
+                    false));
 
-            Map.entry("wifi/upload",
+            put("wifi/upload",
                     new MapOption("speed_upload",
                             "speed_upload_log",
                             "speed_upload is not null AND network_type = 99",
@@ -406,9 +409,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_UPLOAD,
                             Classification.THRESHOLD_UPLOAD_CAPTIONS,
                             "heatmap",
-                            false)),
+                            false));
 
-            Map.entry("wifi/ping",
+            put("wifi/ping",
                     new MapOption("ping_median",
                             "ping_median_log",
                             "ping_median is not null AND network_type = 99",
@@ -418,9 +421,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_PING,
                             Classification.THRESHOLD_PING_CAPTIONS,
                             "heatmap",
-                            true)),
+                            true));
 
-            Map.entry("wifi/signal", new MapOption("signal_strength",
+            put("wifi/signal", new MapOption("signal_strength",
                     "signal_strength is not null AND network_type = 99",
                     colors_rgb,
                     signal_wifi,
@@ -428,9 +431,9 @@ final public class MapServerOptions
                     Classification.THRESHOLD_SIGNAL_WIFI,
                     Classification.THRESHOLD_SIGNAL_WIFI_CAPTIONS,
                     "heatmap",
-                    false)),
+                    false));
 
-            Map.entry("browser/download",
+            put("browser/download",
                     new MapOption("speed_download",
                             "speed_download_log",
                             "speed_download is not null AND network_type = 98",
@@ -440,9 +443,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_DOWNLOAD,
                             Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
                             "shapes",
-                            false)),
+                            false));
 
-            Map.entry("browser/upload",
+            put("browser/upload",
                     new MapOption("speed_upload",
                             "speed_upload_log",
                             "speed_upload is not null AND network_type = 98",
@@ -452,9 +455,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_UPLOAD,
                             Classification.THRESHOLD_UPLOAD_CAPTIONS,
                             "shapes",
-                            false)),
+                            false));
 
-            Map.entry("browser/ping",
+            put("browser/ping",
                     new MapOption("ping_median",
                             "ping_median_log",
                             "ping_median is not null AND network_type = 98",
@@ -464,9 +467,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_PING,
                             Classification.THRESHOLD_PING_CAPTIONS,
                             "shapes",
-                            true)),
+                            true));
 
-            Map.entry("all/download",
+            put("all/download",
                     new MapOption("speed_download",
                             "speed_download_log",
                             "speed_download is not null",
@@ -476,9 +479,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_DOWNLOAD,
                             Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
                             "shapes",
-                            false)),
+                            false));
 
-            Map.entry("all/upload",
+            put("all/upload",
                     new MapOption("speed_upload",
                             "speed_upload_log",
                             "speed_upload is not null",
@@ -488,9 +491,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_UPLOAD,
                             Classification.THRESHOLD_UPLOAD_CAPTIONS,
                             "shapes",
-                            false)),
+                            false));
 
-            Map.entry("all/ping",
+            put("all/ping",
                     new MapOption("ping_median",
                             "ping_median_log",
                             "ping_median is not null",
@@ -500,8 +503,9 @@ final public class MapServerOptions
                             Classification.THRESHOLD_PING,
                             Classification.THRESHOLD_PING_CAPTIONS,
                             "shapes",
-                            true))
-    );
+                            true));
+        }
+    };
 
     
     @Getter
