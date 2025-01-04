@@ -14,4 +14,10 @@ public interface Constants {
     Float SHAPE_DEFAULT_TRANSPARENCY = 0.4f;
     Float POINT_DEFAULT_TRANSPARENCY = 0.6f;
     Float HEATMAP_DEFAULT_TRANSPARENCY = 0.75f;
+
+    final static String[] OPTION_TECHNOLOGY_TITLE = new String[] {
+            "ANY", "3G_4G_5G", "4G_5G", "3G_4G", "2G", "3G", "4G", "5G"};
+
+    final static String[] OPTION_TECHNOLOGY_VALUE = new String[] {
+            "", "345", "45", "34", "2", "3", "4", "5"};
 }

@@ -9,4 +9,5 @@ public interface URIConstants {
 
     String MARKERS = "/tiles/markers";
     String TILES_INFORMATION = "/tiles/info";
+    String TILES_INFORMATION_V2 = "/v2/tiles/info";
 }
