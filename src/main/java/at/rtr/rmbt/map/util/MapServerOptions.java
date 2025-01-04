@@ -293,136 +293,134 @@ final public class MapServerOptions
    };
 
 
-    
-    protected static final Map<String, MapOption> mapOptionMap = new LinkedHashMap<String, MapOption>()
-    {
-        {
-            put("mobile/download", 
-                    new MapOption("speed_download", 
-                        "speed_download_log",
-                        "speed_download is not null AND network_type not in (0, 97, 98, 99)", 
-                        
+    @Getter
+    protected static final Map<String, MapOption> mapOptionMap = Map.ofEntries(
+            Map.entry("mobile/download",
+                    new MapOption("speed_download",
+                            "speed_download_log",
+                            "speed_download is not null AND network_type not in (0, 97, 98, 99)",
+
 //                        new int[] { 0xffff00, 0xff0000 },
 //                        new double[] { 0.5, 0.825257499 },
 //                        new String[] { "1", "20" },
-                        
-                        // ampel
+
+                            // ampel
 //                        new int[] { 0xff0000, 0xffff00, 0x00ff00 },
 //                        new double[] { 0.5, 0.6626287495, 0.825257499 },
 //                        new String[] { "1", "4.5", "20" },
-                        
-                        // ampel 2
-                        colors_rgb,
-                        values_download,
-                        captions_download,
-                        
-                        // LSD
+
+                            // ampel 2
+                            colors_rgb,
+                            values_download,
+                            captions_download,
+
+                            // LSD
 //                        new int[] { 0x33B5E5, 0xAA66CC, 0x99CC00, 0xFFBB33, 0xFF4444, 0x0099CC, 0x9933CC, 0x669900, 0xFF8800, 0xCC0000 },
 //                        new double[] { 0.5, 0.5361397221, 0.5722794442, 0.6084191663, 0.6445588884, 0.6806986106, 0.7168383327, 0.7529780548, 0.7891177769, 0.825257499 },
 //                        new String[] { "1", "1.4", "1.9", "2.7", "3.8", "5.3", "7.4", "10", "14", "20" },
-                        
-                        // LSD reverse
+
+                            // LSD reverse
 //                        new int[] { 0xCC0000, 0xFF8800, 0x669900, 0x9933CC, 0x0099CC, 0xFF4444, 0xFFBB33, 0x99CC00, 0xAA66CC, 0x33B5E5 },
 //                        new double[] { 0.5, 0.5361397221, 0.5722794442, 0.6084191663, 0.6445588884, 0.6806986106, 0.7168383327, 0.7529780548, 0.7891177769, 0.825257499 },
 //                        new String[] { "1", "1.4", "1.9", "2.7", "3.8", "5.3", "7.4", "10", "14", "20" },
-                        
-                        // rotblau
+
+                            // rotblau
 //                        new int[] { 0x0000ff, 0xff00ff, 0xff0000 },
 //                        new double[] { 0.5, 0.6626287495, 0.825257499 },
 //                        new String[] { "1", "4.5", "20" },
-                        
-                        // blaurot
+
+                            // blaurot
 //                        new int[] { 0xff0000, 0xff00ff, 0x0000ff },
 //                        new double[] { 0.5, 0.6626287495, 0.825257499 },
 //                        new String[] { "1", "4.5", "20" },
-                        
-                        // .se
+
+                            // .se
 //                        new int[] { 0x9b55fc, 0x344bfc, 0x0ebff7, 0x08fe05, 0xf8fd04, 0xfbbc04, 0xf40204, 0x790204, 0x240204 },
 //                        new double[] { 0.5, 0.5406571874, 0.5813143748, 0.6219715621, 0.6626287495, 0.7032859369, 0.7439431243, 0.7846003116, 0.825257499 },
 //                        new String[] { "1", "1.5", "2.1", "3.1", "4.5", "6.5", "9.5", "14", "20" },
-                        
-                     // falschfarben
+
+                            // falschfarben
 //                        new int[] { 0x811616, 0x81b16, 0x818116, 0x4b8116, 0x168116, 0x16814b, 0x168181, 0x164b81, 0x161681, 0x4b1681, 0x811681 },
 //                        new double[] { 0.5, 0.5325257499, 0.5650514998, 0.5975772497, 0.6301029996, 0.6626287495, 0.6951544994, 0.7276802493, 0.7602059992, 0.7927317491, 0.825257499 },
 //                        new String[] { "1", "1.3", "1.8", "2.5", "3.3", "4.5", "6", "8.1", "11", "14.8", "20" },
-                        
-                        Classification.THRESHOLD_DOWNLOAD,
-                        Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
-                        "heatmap",
-                        false));
-            
-            put("mobile/upload",
-                    new MapOption("speed_upload",
-                        "speed_upload_log",
-                        "speed_upload is not null AND network_type not in (0, 97, 98, 99)",
-                        colors_rgb,
-                        values_upload,
-                        captions_upload,
-                        Classification.THRESHOLD_UPLOAD,
-                        Classification.THRESHOLD_UPLOAD_CAPTIONS,
-                        "heatmap",
-                        false));
 
-            
-            put("mobile/ping",
-                    new MapOption("ping_median",
-                        "ping_median_log",
-                        "ping_median is not null AND network_type not in (0, 97, 98, 99)",
-                        colors_rgb,
-                        values_ping,
-                        captions_ping,
-                        Classification.THRESHOLD_PING,
-                        Classification.THRESHOLD_PING_CAPTIONS,
-                        "heatmap",
-                        true));
-            
-            put("mobile/signal",
-                    new MapOption("merged_signal",
-                    "merged_signal is not null AND network_type not in (0, 97, 98, 99)",
-                    colors_rgb,
-                    signal_mobile,
-                    captions_mobile,
-                    Classification.THRESHOLD_SIGNAL_MOBILE,
-                    Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
-                    "heatmap",
-                    false));
-                        
-            put("wifi/download", new MapOption("speed_download",
-                    "speed_download_log",
-                    "speed_download is not null AND network_type = 99",
-                    colors_rgb,
-                    values_download,
-                    captions_download,
-                    Classification.THRESHOLD_DOWNLOAD,
-                    Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
-                    "heatmap",
-                    false));
-            
-            put("wifi/upload",
-                    new MapOption("speed_upload",
+                            Classification.THRESHOLD_DOWNLOAD,
+                            Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
+                            "heatmap",
+                            false)),
+
+            Map.entry("mobile/upload", new MapOption("speed_upload",
                     "speed_upload_log",
-                    "speed_upload is not null AND network_type = 99",
+                    "speed_upload is not null AND network_type not in (0, 97, 98, 99)",
                     colors_rgb,
                     values_upload,
                     captions_upload,
                     Classification.THRESHOLD_UPLOAD,
                     Classification.THRESHOLD_UPLOAD_CAPTIONS,
                     "heatmap",
-                    false));
-            
-            put("wifi/ping",
+                    false)),
+
+
+            Map.entry("mobile/ping",
                     new MapOption("ping_median",
-                    "ping_median_log",
-                    "ping_median is not null AND network_type = 99",
-                    colors_rgb,
-                    values_ping,
-                    captions_ping,
-                    Classification.THRESHOLD_PING,
-                    Classification.THRESHOLD_PING_CAPTIONS,
-                    "heatmap",
-                    true));
-            
-            put("wifi/signal", new MapOption("signal_strength",
+                            "ping_median_log",
+                            "ping_median is not null AND network_type not in (0, 97, 98, 99)",
+                            colors_rgb,
+                            values_ping,
+                            captions_ping,
+                            Classification.THRESHOLD_PING,
+                            Classification.THRESHOLD_PING_CAPTIONS,
+                            "heatmap",
+                            true)),
+
+            Map.entry("mobile/signal",
+                    new MapOption("merged_signal",
+                            "merged_signal is not null AND network_type not in (0, 97, 98, 99)",
+                            colors_rgb,
+                            signal_mobile,
+                            captions_mobile,
+                            Classification.THRESHOLD_SIGNAL_MOBILE,
+                            Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
+                            "heatmap",
+                            false)),
+
+            Map.entry("wifi/download",
+                    new MapOption("speed_download",
+                            "speed_download_log",
+                            "speed_download is not null AND network_type = 99",
+                            colors_rgb,
+                            values_download,
+                            captions_download,
+                            Classification.THRESHOLD_DOWNLOAD,
+                            Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
+                            "heatmap",
+                            false)),
+
+            Map.entry("wifi/upload",
+                    new MapOption("speed_upload",
+                            "speed_upload_log",
+                            "speed_upload is not null AND network_type = 99",
+                            colors_rgb,
+                            values_upload,
+                            captions_upload,
+                            Classification.THRESHOLD_UPLOAD,
+                            Classification.THRESHOLD_UPLOAD_CAPTIONS,
+                            "heatmap",
+                            false)),
+
+            Map.entry("wifi/ping",
+                    new MapOption("ping_median",
+                            "ping_median_log",
+                            "ping_median is not null AND network_type = 99",
+                            colors_rgb,
+                            values_ping,
+                            captions_ping,
+                            Classification.THRESHOLD_PING,
+                            Classification.THRESHOLD_PING_CAPTIONS,
+                            "heatmap",
+                            true)),
+
+            Map.entry("wifi/signal", new MapOption("signal_strength",
                     "signal_strength is not null AND network_type = 99",
                     colors_rgb,
                     signal_wifi,
@@ -430,82 +428,83 @@ final public class MapServerOptions
                     Classification.THRESHOLD_SIGNAL_WIFI,
                     Classification.THRESHOLD_SIGNAL_WIFI_CAPTIONS,
                     "heatmap",
-                    false));
-            
-            put("browser/download",
-                    new MapOption("speed_download", 
-                    "speed_download_log",
-                    "speed_download is not null AND network_type = 98",
-                    colors_rgb,
-                    values_download,
-                    captions_download,
-                    Classification.THRESHOLD_DOWNLOAD,
-                    Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
-                    "shapes",
-                    false));
-            
-            put("browser/upload",
-                    new MapOption("speed_upload",
-                    "speed_upload_log",
-                    "speed_upload is not null AND network_type = 98",
-                    colors_rgb,
-                    values_upload,
-                    captions_upload,
-                    Classification.THRESHOLD_UPLOAD,
-                    Classification.THRESHOLD_UPLOAD_CAPTIONS,
-                    "shapes",
-                    false));
-            
-            put("browser/ping",
-                    new MapOption("ping_median",
-                    "ping_median_log",
-                    "ping_median is not null AND network_type = 98",
-                    colors_rgb,
-                    values_ping,
-                    captions_ping,
-                    Classification.THRESHOLD_PING,
-                    Classification.THRESHOLD_PING_CAPTIONS,
-                    "shapes",
-                    true));
+                    false)),
 
-            put("all/download",
-                    new MapOption("speed_download", 
-                    "speed_download_log",
-                    "speed_download is not null",
-                    colors_rgb,
-                    values_download,
-                    captions_download,
-                    Classification.THRESHOLD_DOWNLOAD,
-                    Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
-                    "shapes",
-                    false));
-            
-            put("all/upload",
+            Map.entry("browser/download",
+                    new MapOption("speed_download",
+                            "speed_download_log",
+                            "speed_download is not null AND network_type = 98",
+                            colors_rgb,
+                            values_download,
+                            captions_download,
+                            Classification.THRESHOLD_DOWNLOAD,
+                            Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
+                            "shapes",
+                            false)),
+
+            Map.entry("browser/upload",
                     new MapOption("speed_upload",
-                    "speed_upload_log",
-                    "speed_upload is not null",
-                    colors_rgb,
-                    values_upload,
-                    captions_upload,
-                    Classification.THRESHOLD_UPLOAD,
-                    Classification.THRESHOLD_UPLOAD_CAPTIONS,
-                    "shapes",
-                    false));
-            
-            put("all/ping",
+                            "speed_upload_log",
+                            "speed_upload is not null AND network_type = 98",
+                            colors_rgb,
+                            values_upload,
+                            captions_upload,
+                            Classification.THRESHOLD_UPLOAD,
+                            Classification.THRESHOLD_UPLOAD_CAPTIONS,
+                            "shapes",
+                            false)),
+
+            Map.entry("browser/ping",
                     new MapOption("ping_median",
-                    "ping_median_log",
-                    "ping_median is not null",
-                    colors_rgb,
-                    values_ping,
-                    captions_ping,
-                    Classification.THRESHOLD_PING,
-                    Classification.THRESHOLD_PING_CAPTIONS,
-                    "shapes",
-                    true));
-        }
-    };
+                            "ping_median_log",
+                            "ping_median is not null AND network_type = 98",
+                            colors_rgb,
+                            values_ping,
+                            captions_ping,
+                            Classification.THRESHOLD_PING,
+                            Classification.THRESHOLD_PING_CAPTIONS,
+                            "shapes",
+                            true)),
+
+            Map.entry("all/download",
+                    new MapOption("speed_download",
+                            "speed_download_log",
+                            "speed_download is not null",
+                            colors_rgb,
+                            values_download,
+                            captions_download,
+                            Classification.THRESHOLD_DOWNLOAD,
+                            Classification.THRESHOLD_DOWNLOAD_CAPTIONS,
+                            "shapes",
+                            false)),
+
+            Map.entry("all/upload",
+                    new MapOption("speed_upload",
+                            "speed_upload_log",
+                            "speed_upload is not null",
+                            colors_rgb,
+                            values_upload,
+                            captions_upload,
+                            Classification.THRESHOLD_UPLOAD,
+                            Classification.THRESHOLD_UPLOAD_CAPTIONS,
+                            "shapes",
+                            false)),
+
+            Map.entry("all/ping",
+                    new MapOption("ping_median",
+                            "ping_median_log",
+                            "ping_median is not null",
+                            colors_rgb,
+                            values_ping,
+                            captions_ping,
+                            Classification.THRESHOLD_PING,
+                            Classification.THRESHOLD_PING_CAPTIONS,
+                            "shapes",
+                            true))
+    );
+
     
+    @Getter
     protected static final List<SQLFilter> defaultMapFilters = Collections.unmodifiableList(new ArrayList<SQLFilter>()
     {
         {
@@ -513,8 +512,10 @@ final public class MapServerOptions
         }
     });
     
+    @Getter
     protected static final SQLFilter accuracyMapFilter = new SQLFilter("t.geo_accuracy < 2000"); // 2km
     
+    @Getter
     protected static final Map<String, MapFilter> mapFilterMap = Map.of(
             "operator", new MapFilter()
             {
@@ -679,7 +680,8 @@ final public class MapServerOptions
                 }
             });
 
-    
+
+    @Getter
     public static class MapOption
     {
         public MapOption(final String valueColumn, final String sqlFilter, final int[] colors,
@@ -789,30 +791,10 @@ final public class MapServerOptions
             return this.where;
         }
     }
-    
-    public static Map<String, MapOption> getMapOptionMap()
-    {
-        return mapOptionMap;
-    }
-    
-    public static Map<String, MapFilter> getMapFilterMap()
-    {
-        return mapFilterMap;
-    }
-    
+
     public static boolean isValidFilter(String name)
     {
         return mapFilterMap.containsKey(name);
-    }
-    
-    public static List<SQLFilter> getDefaultMapFilters()
-    {
-        return defaultMapFilters;
-    }
-    
-    public static SQLFilter getAccuracyMapFilter()
-    {
-        return accuracyMapFilter;
     }
 
     /**

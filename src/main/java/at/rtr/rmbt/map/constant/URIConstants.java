@@ -8,4 +8,5 @@ public interface URIConstants {
     public static enum TILE_TYPE {points, shapes, heatmap}
 
     String MARKERS = "/tiles/markers";
+    String TILES_INFORMATION = "/tiles/info";
 }

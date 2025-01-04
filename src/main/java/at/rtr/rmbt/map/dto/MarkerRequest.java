@@ -1,5 +1,6 @@
 package at.rtr.rmbt.map.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MarkerRequest {
     String language;
 
