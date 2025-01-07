@@ -29,5 +29,6 @@ class HeatmapTileServiceTest {
         TilesRequest tr = new TilesRequest(7,70,44,0.5f,null,"mobile/download", null, null, null, null, null, null, null, null, null, null, null, null);
         byte[] bytes = heatmapTileService.generateSingleTile(tr, Constants.TILE_TYPE.HEATMAP);
         System.out.println("Tile generated of size " + bytes.length);
+        bytes = heatmapTileService.generateSingleTile(tr, Constants.TILE_TYPE.HEATMAP);
     }
 }

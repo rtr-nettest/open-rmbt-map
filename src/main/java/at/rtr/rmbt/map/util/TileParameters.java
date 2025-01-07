@@ -2,7 +2,9 @@ package at.rtr.rmbt.map.util;
 
 import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
+import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -10,7 +12,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TileParameters {
+@ToString
+public class TileParameters implements Serializable {
     protected static final Pattern PATH_PATTERN = Pattern.compile("(\\d+)/(\\d+)/(\\d+)");
     protected static final int MAX_ZOOM = 21;
 
@@ -22,6 +25,7 @@ public class TileParameters {
     protected final double transparency;
     protected final String developerCode;
 
+    @ToString
     public final static class Path {
         protected final int zoom, x, y;
 
@@ -172,7 +176,7 @@ public class TileParameters {
     };
 
 
-
+    @ToString
     public static class PointTileParameters extends TileParameters
     {
         protected final double pointDiameter;
@@ -259,6 +263,7 @@ public class TileParameters {
 
     }
 
+    @ToString
     public static class ShapeTileParameters extends TileParameters
     {
         public ShapeTileParameters(Path path, TilesRequest params)

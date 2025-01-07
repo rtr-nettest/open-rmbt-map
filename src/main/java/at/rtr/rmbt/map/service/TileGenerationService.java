@@ -2,6 +2,7 @@ package at.rtr.rmbt.map.service;
 
 import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
+import at.rtr.rmbt.map.model.CachedTile;
 import at.rtr.rmbt.map.util.GeoCalc;
 import at.rtr.rmbt.map.util.MapServerOptions;
 import at.rtr.rmbt.map.util.TileParameters;
@@ -9,17 +10,27 @@ import at.rtr.rmbt.map.util.TileParameters.Path;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.data.redis.core.script.DigestUtils;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-
+@Slf4j
 public abstract class TileGenerationService {
     protected static final int[] TILE_SIZES = new int[] { 256, 512, 768 };
     protected static final byte[][] EMPTY_IMAGES = new byte[TILE_SIZES.length][];
@@ -27,8 +38,11 @@ public abstract class TileGenerationService {
 
     protected static final byte[] EMPTY_MARKER = "EMPTY".getBytes();
 
-    private static final int CACHE_STALE = 60*60;
-    private static final int CACHE_EXPIRE = 24*60*60;
+    @Autowired
+    private CacheManager cacheManager;
+
+    @Autowired
+    private TaskExecutor executor;
 
     @PostConstruct
     private void initializeStructures() {
@@ -94,56 +108,62 @@ public abstract class TileGenerationService {
     //get a specific tile, try getting from cache, otherwise from subclass
     public byte[] getTile(final TileParameters p)
     {
-        boolean useCache = false;
-        //if (p.isNoCache())
-        //    useCache = false;
+        boolean useCache = true;
+        if (p.isNoCache()) {
+            useCache = false;
+        }
 
-        final String cacheKey;
-
-        /*if (useCache)
+        String cacheKeyStr = p.toString();
+        final String cacheKey = DigestUtils.sha1DigestAsHex(cacheKeyStr);;
+        Cache cache = cacheManager.getCache(Constants.TILE_CACHE);
+        if (useCache && cache != null)
         {
-            cacheKey = CacheHelper.getHash((TileParameters)p);
-            final ObjectWithTimestamp cacheObject = cache.getWithTimestamp(cacheKey, CACHE_STALE);
+
+            CachedTile cacheObject = cache.get(cacheKey, CachedTile.class);
             if (cacheObject != null)
             {
-                System.out.println("cache hit for: " + cacheKey + "; is stale: " + cacheObject.stale);
-                byte[] data = (byte[]) cacheObject.o;
+                boolean isStale = Instant.now().minus(Constants.TILE_CACHE_STALE, ChronoUnit.SECONDS).isAfter(cacheObject.getCreationTime());
+                log.debug("cache hit for: " + cacheKey + "; is stale: " + isStale);
+                byte[] data = (byte[]) cacheObject.getTileContent();
                 if (Arrays.equals(EMPTY_MARKER, data))
                     data = EMPTY_IMAGES[getTileSizeIdx(p)];
-                if (cacheObject.stale)
+                if (isStale)
                 {
                     final Runnable refreshCacheRunnable = new Runnable()
                     {
                         @Override
                         public void run()
                         {
-                            System.out.println("adding in background: " + cacheKey);
-                            final byte[] newData = generateTile(p, getTileSizeIdx(p));
-                            cache.set(cacheKey, CACHE_EXPIRE, newData != null ? newData : EMPTY_MARKER, true);
+                            log.debug("adding in background: " + cacheKey);
+                            final int tileSizeIdx = getTileSizeIdx(p);
+                            byte[] data = generateTile(p, tileSizeIdx);
+                            CachedTile ct = new CachedTile();
+                            ct.setCreationTime(Instant.now());
+                            ct.setTileContent(data);
+                            cache.put(cacheKey, ct);
                         }
                     };
-                    cache.getExecutor().execute(refreshCacheRunnable);
+                    executor.execute(refreshCacheRunnable);
+
                 }
                 return data;
             }
             else {
-                System.out.println("no cache hit for: " + cacheKey);
+                log.info("no cache hit for: " + cacheKey);
             }
         }
-        else
-            cacheKey = null;
-
-         */
 
         final int tileSizeIdx = getTileSizeIdx(p);
         byte[] data = generateTile(p, tileSizeIdx);
-//        if (data == null)
 
-        /*if (useCache)
+        if (useCache && cache != null)
         {
-            System.out.println("adding to cache: " + cacheKey);
-            cache.set(cacheKey, CACHE_EXPIRE, data != null ? data : EMPTY_MARKER, true);
-        }*/
+            log.info("adding to cache: " + cacheKey);
+            CachedTile ct = new CachedTile();
+            ct.setCreationTime(Instant.now());
+            ct.setTileContent(data != null ? data : EMPTY_MARKER);
+            cache.put(cacheKey, ct);
+        }
 
         if (data == null)
             data = EMPTY_IMAGES[tileSizeIdx];

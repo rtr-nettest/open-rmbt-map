@@ -82,7 +82,7 @@ public class TilesController {
 
     public byte[] getHeatmapTiles(TilesRequest parameters) {
         TileParameters params = new TileParameters(new TileParameters.Path(parameters.getZoom(), parameters.getX(), parameters.getY()), parameters, Constants.HEATMAP_DEFAULT_TRANSPARENCY);
-        return this.pointTileService.getTile(params);
+        return this.heatmapTileService.getTile(params);
     }
 
 }
