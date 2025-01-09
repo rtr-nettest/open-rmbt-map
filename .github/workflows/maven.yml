@@ -1,0 +1,31 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: WAR build
+
+on:
+  push:
+    branches: [ master ]
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: maven
+      - name: Build war with Maven
+        run: mvn -B -DskipTests=true compile package
+      - name: Archive war
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapserver-war
+          path: target/map-server-*.war
+          retention-days: 365
