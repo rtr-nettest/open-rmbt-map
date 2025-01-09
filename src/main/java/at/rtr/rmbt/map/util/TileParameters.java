@@ -176,7 +176,7 @@ public class TileParameters implements Serializable {
     };
 
 
-    @ToString
+    @ToString(callSuper = true)
     public static class PointTileParameters extends TileParameters
     {
         protected final double pointDiameter;
@@ -263,7 +263,7 @@ public class TileParameters implements Serializable {
 
     }
 
-    @ToString
+    @ToString(callSuper = true)
     public static class ShapeTileParameters extends TileParameters
     {
         public ShapeTileParameters(Path path, TilesRequest params)
