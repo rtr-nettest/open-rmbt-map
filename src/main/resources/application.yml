@@ -12,9 +12,9 @@ spring:
     poolSize: 20
     minIdle: 1
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${STATISTIC_DB_HOST}:${STATISTIC_DB_PORT}/${STATISTIC_DB_NAME}
-    username: ${STATISTIC_DB_USER}
-    password: ${STATISTIC_DB_PASSWORD}
+    url: jdbc:postgresql://${MAP_DB_HOST}:${MAP_DB_PORT}/${MAP_DB_NAME}
+    username: ${MAP_DB_USER}
+    password: ${MAP_DB_PASSWORD}
 
   #    tomcat:
   #      test-while-idle: true
@@ -29,8 +29,8 @@ spring:
     deserialization:
       fail-on-unknown-properties: true
 redis:
-  host: localhost
-  port: 6379
+  host: ${MAP_REDIS_HOST}
+  port: ${MAP_REDIS_PORT}
 java:
   util:
     PropertyResourceBundle:
@@ -47,9 +47,9 @@ spring:
     poolSize: 20
     minIdle: 1
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${STATISTIC_DB_HOST}:${STATISTIC_DB_PORT}/${STATISTIC_DB_NAME}
-    username: ${STATISTIC_DB_USER}
-    password: ${STATISTIC_DB_PASSWORD}
+    url: jdbc:postgresql://${MAP_DB_HOST}:${MAP_DB_PORT}/${MAP_DB_NAME}
+    username: ${MAP_DB_USER}
+    password: ${MAP_DB_PASSWORD}
     tomcat:
       test-while-idle: true
       test-on-borrow: true
@@ -59,7 +59,7 @@ application-version:
   host: ${HOST_ID}
 
 redis:
-  host: ${STATISTIC_REDIS_HOST}
-  port: ${STATISTIC_REDIS_PORT}
+  host: ${MAP_REDIS_HOST}
+  port: ${MAP_REDIS_PORT}
 logging:
   config: ${LOGGING_CONFIG_FILE_STATISTIC:classpath:logback.xml}
