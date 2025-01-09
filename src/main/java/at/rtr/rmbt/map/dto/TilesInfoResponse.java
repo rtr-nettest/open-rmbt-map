@@ -79,6 +79,7 @@ public class TilesInfoResponse {
     @Setter
     public static class MapFilterOption {
         @JsonProperty("default")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private Boolean defaultOption;
 
         @JsonProperty("title")
@@ -93,14 +94,16 @@ public class TilesInfoResponse {
         private Integer period;
 
         @JsonProperty("technology")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private String technology;
 
         @JsonProperty("operator")
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        private Long operator;
+        private Object operator;
 
         @JsonProperty("provider")
-        private Long provider;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Object provider;
 
         @JsonProperty("device")
         @JsonInclude(JsonInclude.Include.NON_NULL)

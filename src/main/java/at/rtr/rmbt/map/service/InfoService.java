@@ -155,6 +155,12 @@ public class InfoService {
         defaultOption.setDefaultOption(true);
         defaultOption.setTitle(labels.getString("MAP_FILTER_ALL_OPERATORS"));
         defaultOption.setSummary("");
+        if (mobile) {
+            defaultOption.setOperator("");
+        }
+        else {
+            defaultOption.setProvider("");
+        }
         //@TODO: In old code, "operator" was either String or Long
         filterOptions.getFilterOptions().add(defaultOption);
 
