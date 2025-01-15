@@ -4,8 +4,11 @@ This repository contains the map server for the RTR-NetTest.
 
 *This repo is in beta testing, please do not use it for production.*
 
-## Required Tomcat settings
+## License
+*Open-RMBT* is released under the [Apache License, Version 2.0](LICENSE). It was developed
+by the [Austrian Regulatory Authority for Broadcasting and Telecommunications (RTR-GmbH)](https://www.rtr.at/).
 
+## Required Tomcat settings
 Add the following variables to `context.xml` within the `<Resource>` block:
 
      <!-- Map: database connection -->
