@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>at.rtr.rmbt</groupId>
-    <artifactId>map-server</artifactId>
+    <artifactId>RMBTMapServer</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>mapserver</name>
+    <name>RMBTMapServer</name>
     <packaging>war</packaging>
-    <description>RTR mapserver project</description>
+    <description>RMBTMapServer</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
