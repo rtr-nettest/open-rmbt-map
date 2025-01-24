@@ -73,6 +73,7 @@ public class FiltersService {
         return response;
     }
 
+    //Download, upload, ping, signal
     private MapFiltersResponse.MapFilter getMapTypeList(ResourceBundle labels) {
         String lastType = null;
 
@@ -110,6 +111,14 @@ public class FiltersService {
                 subOptionItem.setDefault(true);
             }
             subOptionItem.addParameter("overlay_type", mapOption.overlayType);
+
+            //add color information
+            String[] colorsHexStrings = mapOption.getColorsHexStrings();//hex strings
+            String[] captions = mapOption.getCaptions();//captions;
+            for (int i = 0;i<colorsHexStrings.length;i++) {
+                subOptionItem.getHeatMapColorEntries().add(new MapFiltersResponse.HeatMapColorEntry(colorsHexStrings[i], captions[i]));
+            }
+
             subOption.addOption(subOptionItem);
         }
 

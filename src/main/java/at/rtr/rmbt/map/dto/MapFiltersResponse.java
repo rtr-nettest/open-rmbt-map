@@ -2,14 +2,12 @@ package at.rtr.rmbt.map.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Setter
@@ -61,6 +59,10 @@ public class MapFiltersResponse implements Serializable {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private Map<String, Boolean> dependsOn;
 
+        @JsonProperty("heatmap")
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        private List<HeatMapColorEntry> heatMapColorEntries = new ArrayList<>();
+
         @JsonProperty("default")
         private boolean isDefault;
 
@@ -111,5 +113,13 @@ public class MapFiltersResponse implements Serializable {
             }
             this.funcParams.put(key, value);
         }
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class HeatMapColorEntry {
+        final String color;
+        final String caption;
     }
 }
