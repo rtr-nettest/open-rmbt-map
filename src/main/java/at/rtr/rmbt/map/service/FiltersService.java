@@ -11,6 +11,7 @@ import jakarta.persistence.Query;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.LocaleUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -60,8 +61,7 @@ public class FiltersService {
             statisticalMethods.getOptions().add(o);
         }
 
-
-        response.addMapFilter(getMapTypeList(labels));
+        response.addMapFilter(getMapTypeList(labels, BooleanUtils.isTrue(request.getLegend())));
         response.addMapFilter(getTechnology(labels));
         response.addMapFilter(getOperators(labels, true));
         response.addMapFilter(getOperators(labels, false));
@@ -74,7 +74,7 @@ public class FiltersService {
     }
 
     //Download, upload, ping, signal
-    private MapFiltersResponse.MapFilter getMapTypeList(ResourceBundle labels) {
+    private MapFiltersResponse.MapFilter getMapTypeList(ResourceBundle labels, boolean includeLegend) {
         String lastType = null;
 
         final MapFiltersResponse.MapFilter mapTypeOption = new MapFiltersResponse.MapFilter();
@@ -113,10 +113,12 @@ public class FiltersService {
             subOptionItem.addParameter("overlay_type", mapOption.overlayType);
 
             //add color information
-            String[] colorsHexStrings = mapOption.getColorsHexStrings();//hex strings
-            String[] captions = mapOption.getCaptions();//captions;
-            for (int i = 0;i<colorsHexStrings.length;i++) {
-                subOptionItem.getHeatMapColorEntries().add(new MapFiltersResponse.HeatMapColorEntry(colorsHexStrings[i], captions[i]));
+            if (includeLegend) {
+                String[] colorsHexStrings = mapOption.getColorsHexStrings();//hex strings
+                String[] captions = mapOption.getCaptions();//captions;
+                for (int i = 0; i < colorsHexStrings.length; i++) {
+                    subOptionItem.getHeatMapColorEntries().add(new MapFiltersResponse.HeatMapColorEntry(colorsHexStrings[i], captions[i]));
+                }
             }
 
             subOption.addOption(subOptionItem);
