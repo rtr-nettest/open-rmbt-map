@@ -12,7 +12,4 @@ public class TilesInfoRequest {
 
     @JsonProperty("language")
     private String language;
-
-    @JsonProperty(value = "legend", required = false)
-    private Boolean legend;
 }

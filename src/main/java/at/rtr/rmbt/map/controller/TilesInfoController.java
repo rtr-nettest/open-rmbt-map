@@ -6,7 +6,6 @@ import at.rtr.rmbt.map.dto.TilesInfoRequest;
 import at.rtr.rmbt.map.dto.TilesInfoResponse;
 import at.rtr.rmbt.map.service.FiltersService;
 import at.rtr.rmbt.map.service.InfoService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,6 @@ public class TilesInfoController {
     public MapFiltersResponse getMapFiltersV2Get(@RequestParam(required = false) String language, @RequestParam(required = false) Boolean legend) {
         TilesInfoRequest request = new TilesInfoRequest();
         request.setLanguage(language);
-        request.setLegend(legend);
         return filtersService.getMapFilters(request);
     }
     @Operation(summary = "Get info on available tiles")
