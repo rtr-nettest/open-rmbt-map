@@ -130,7 +130,7 @@ public class FiltersService {
     private MapFiltersResponse.MapFilter getTechnology(ResourceBundle labels) {
         final MapFiltersResponse.MapFilter option = new MapFiltersResponse.MapFilter();
         option.setTitle(labels.getString("MAP_FILTER_TECHNOLOGY"));
-        option.setIcon("MAP_FILTER_TECHNOLOGY_ICON");
+        option.setIcon(labels.getString("MAP_FILTER_TECHNOLOGY_ICON"));
         option.addDependsOn("map_type_is_mobile", true);
 
         for (int i = 0; i < Constants.OPTION_TECHNOLOGY_TITLE.length; i++) {
@@ -241,7 +241,9 @@ public class FiltersService {
         public MapFiltersResponse.Function getFunctionDef(final String functionName) {
             final MapFiltersResponse.Function f = new MapFiltersResponse.Function();
             f.setFuncName(functionName);
-            f.addFuncParameter("path", getPath());
+            if (getPath() != null) {
+                f.addFuncParameter("path", getPath());
+            }
             f.addFuncParameter("z_index", getZIndex());
             f.addFuncParameter("tile_size", getTileSize());
             f.addFuncParameter("type", getType());
