@@ -62,4 +62,4 @@ redis:
   host: ${MAP_REDIS_HOST}
   port: ${MAP_REDIS_PORT}
 logging:
-  config: ${LOGGING_CONFIG_FILE_STATISTIC:classpath:logback.xml}
+  config: ${LOGGING_CONFIG_FILE_MAP:classpath:logback.xml}
