@@ -183,11 +183,16 @@ public class HeatmapTileService extends TileGenerationService {
 
                 List<TilesQueryResult> resultList = ps.getResultList();
                 for (TilesQueryResult rs : resultList) {
+                    Integer count = rs.getCount();
+                    final Double val = rs.getVal();
+                    final Double gx = rs.getGx();
+                    final Double gy = rs.getGy();
+
+                    if (val == null || count == null || count.equals(0)) {
+                        continue;
+                    }
+
                     _emptyTile = false;
-                    int count = rs.getCount();
-                    final double val = rs.getVal();
-                    final double gx = rs.getGx();
-                    final double gy = rs.getGy();
 
                     final int mx = (int) Math.round((gx - origX) / partSize);
                     final int my = (int) Math.round((gy - origY) / partSize);
