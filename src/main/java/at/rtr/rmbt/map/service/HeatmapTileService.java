@@ -217,70 +217,78 @@ public class HeatmapTileService extends TileGenerationService {
             if (_emptyTile)
                 return null;
 
-            final Image img = images[tileSizeIdx];
+            return drawImage(tileSizeIdx, tileSize, partSizeFactor, partSizePixels,
+                    fetchPartsX, transparency, values, countsRel, mo);
 
-            final int[] pixels = pixelBuffers[tileSizeIdx];
-            for (int y = 0; y < tileSize; y++)
-                for (int x = 0; x < tileSize; x++)
-                {
-                    final int mx = HORIZON_OFFSET + 1 + (x + partSizePixels / 2) / partSizePixels;
-                    final int my = HORIZON_OFFSET + 1 + (y + partSizePixels / 2) / partSizePixels;
-                    final int relX = (x + partSizePixels / 2) % partSizePixels;
-                    final int relY = (y + partSizePixels / 2) % partSizePixels;
-                    final int relOffset = (relY * partSizePixels + relX) * HORIZON_SIZE;
-
-                    double alphaWeigth = 0;
-                    double valueWeight = 0;
-                    double valueMissing = 0;
-                    final int startIdx = mx - HORIZON_OFFSET + fetchPartsX * (my - HORIZON_OFFSET);
-
-                    for (int i = 0; i < HORIZON_SIZE; i++)
-                    {
-                        final int idx = startIdx + i % HORIZON + fetchPartsX * (i / HORIZON);
-                        if (Double.isNaN(values[idx]))
-                            valueMissing += FACTORS[partSizeFactor][i + relOffset];
-                        else
-                            valueWeight += FACTORS[partSizeFactor][i + relOffset] * values[idx];
-                        alphaWeigth += FACTORS[partSizeFactor][i + relOffset] * countsRel[idx];
-                    }
-
-                    if (valueMissing > 0)
-                        valueWeight += valueWeight / (1 - valueMissing) * valueMissing;
-
-                    alphaWeigth /= ALPHA_TOP;
-                    if (alphaWeigth < 0)
-                        alphaWeigth = 0;
-                    if (alphaWeigth > 1)
-                        alphaWeigth = 1;
-
-                    alphaWeigth *= transparency;
-
-                    final int alpha = (int) (alphaWeigth * 255) << 24;
-                    assert alpha >= 0 || alpha <= 255 : alpha;
-                    if (alpha == 0)
-                        pixels[x + y * tileSize] = 0;
-                    else
-                        pixels[x + y * tileSize] = valueToColor(mo.colorsSorted, mo.intervalsSorted, valueWeight)
-                                | alpha;
-                    // pixels[x + y * WIDTH] = 255 << 24 | alpha >>> 8 |
-                    // alpha >>> 16 | alpha >>> 24;
-
-                    if (DEBUG_LINES)
-                        if (relX == partSizePixels / 2 || relY == partSizePixels / 2)
-                            pixels[x + y * tileSize] = 0xff000000;
-                }
-            img.bi.setRGB(0, 0, tileSize, tileSize, pixels, 0, tileSize);
-
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                ImageIO.write(img.bi, "png", baos);
-                //Files.write(new File("/tmp/test").toPath(),baos.toByteArray());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            return baos.toByteArray();
         }
         return null;
+    }
+
+    private synchronized byte[] drawImage(int tileSizeIdx, int tileSize, int partSizeFactor,
+                                          int partSizePixels, int fetchPartsX, double transparency,
+                                          double[] values, int[] countsRel, MapServerOptions.MapOption mo) {
+        final Image img = images[tileSizeIdx];
+
+        final int[] pixels = pixelBuffers[tileSizeIdx];
+        for (int y = 0; y < tileSize; y++)
+            for (int x = 0; x < tileSize; x++)
+            {
+                final int mx = HORIZON_OFFSET + 1 + (x + partSizePixels / 2) / partSizePixels;
+                final int my = HORIZON_OFFSET + 1 + (y + partSizePixels / 2) / partSizePixels;
+                final int relX = (x + partSizePixels / 2) % partSizePixels;
+                final int relY = (y + partSizePixels / 2) % partSizePixels;
+                final int relOffset = (relY * partSizePixels + relX) * HORIZON_SIZE;
+
+                double alphaWeigth = 0;
+                double valueWeight = 0;
+                double valueMissing = 0;
+                final int startIdx = mx - HORIZON_OFFSET + fetchPartsX * (my - HORIZON_OFFSET);
+
+                for (int i = 0; i < HORIZON_SIZE; i++)
+                {
+                    final int idx = startIdx + i % HORIZON + fetchPartsX * (i / HORIZON);
+                    if (Double.isNaN(values[idx]))
+                        valueMissing += FACTORS[partSizeFactor][i + relOffset];
+                    else
+                        valueWeight += FACTORS[partSizeFactor][i + relOffset] * values[idx];
+                    alphaWeigth += FACTORS[partSizeFactor][i + relOffset] * countsRel[idx];
+                }
+
+                if (valueMissing > 0)
+                    valueWeight += valueWeight / (1 - valueMissing) * valueMissing;
+
+                alphaWeigth /= ALPHA_TOP;
+                if (alphaWeigth < 0)
+                    alphaWeigth = 0;
+                if (alphaWeigth > 1)
+                    alphaWeigth = 1;
+
+                alphaWeigth *= transparency;
+
+                final int alpha = (int) (alphaWeigth * 255) << 24;
+                assert alpha >= 0 || alpha <= 255 : alpha;
+                if (alpha == 0)
+                    pixels[x + y * tileSize] = 0;
+                else
+                    pixels[x + y * tileSize] = valueToColor(mo.colorsSorted, mo.intervalsSorted, valueWeight)
+                            | alpha;
+                // pixels[x + y * WIDTH] = 255 << 24 | alpha >>> 8 |
+                // alpha >>> 16 | alpha >>> 24;
+
+                if (DEBUG_LINES)
+                    if (relX == partSizePixels / 2 || relY == partSizePixels / 2)
+                        pixels[x + y * tileSize] = 0xff000000;
+            }
+        img.bi.setRGB(0, 0, tileSize, tileSize, pixels, 0, tileSize);
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(img.bi, "png", baos);
+            //Files.write(new File("/tmp/test").toPath(),baos.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return baos.toByteArray();
     }
 }

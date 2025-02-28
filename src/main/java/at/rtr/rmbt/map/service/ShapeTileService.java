@@ -17,6 +17,7 @@ import java.awt.*;
 import java.awt.geom.Path2D;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -121,54 +122,12 @@ public class ShapeTileService extends TileGenerationService {
                     }
                 }
 
-                if (geoms.isEmpty())
+                if (geoms.isEmpty()) {
                     return null;
-
-                final Image img = images[tileSizeIdx];
-                final Graphics2D g = img.g;
-
-                g.setBackground(new Color(0, 0, 0, 0));
-                g.clearRect(0, 0, img.width, img.height);
-//                    g.setComposite(AlphaComposite.Src);
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                final Path2D.Double path = new Path2D.Double();
-
-                for (final GeometryColor geomColor : geoms) {
-                    final Geometry geom = geomColor.geometry;
-
-                    final Polygon[] polys;
-                    if (geom instanceof MultiPolygon)
-                        polys = ((MultiPolygon) geom).getPolygons();
-                    else if (geom instanceof Polygon)
-                        polys = new Polygon[]{(Polygon) geom};
-                    else
-                        polys = new Polygon[]{};
-
-                    for (final Polygon poly : polys)
-                        for (int i = 0; i < poly.numRings(); i++) {
-                            final net.postgis.jdbc.geometry.Point[] points = poly.getRing(i).getPoints();
-
-                            path.reset();
-                            boolean initial = true;
-                            for (final Point point : points) {
-                                final double relX = (point.x - box.x1) / box.res;
-                                final double relY = TILE_SIZES[tileSizeIdx] - (point.y - box.y1) / box.res;
-                                if (initial) {
-                                    initial = false;
-                                    path.moveTo(relX, relY);
-                                }
-                                path.lineTo(relX, relY);
-                            }
-                            g.setPaint(geomColor.color);
-                            g.fill(path);
-                        }
                 }
 
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(img.bi, "png", baos);
-                //Files.write(new File("/tmp/test1.png").toPath(), baos.toByteArray());
-                return baos.toByteArray();
+                return drawImage(tileSizeIdx, box, geoms);
+
             }
         } catch (final SQLException e) {
             System.out.println(e);
@@ -195,5 +154,54 @@ public class ShapeTileService extends TileGenerationService {
 
         }
         return null;
+    }
+
+    private synchronized byte[] drawImage(int tileSizeIdx, DBox box, List<GeometryColor> geoms) throws IOException {
+
+        final Image img = images[tileSizeIdx];
+        final Graphics2D g = img.g;
+
+        g.setBackground(new Color(0, 0, 0, 0));
+        g.clearRect(0, 0, img.width, img.height);
+//                    g.setComposite(AlphaComposite.Src);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        final Path2D.Double path = new Path2D.Double();
+
+        for (final GeometryColor geomColor : geoms) {
+            final Geometry geom = geomColor.geometry;
+
+            final Polygon[] polys;
+            if (geom instanceof MultiPolygon)
+                polys = ((MultiPolygon) geom).getPolygons();
+            else if (geom instanceof Polygon)
+                polys = new Polygon[]{(Polygon) geom};
+            else
+                polys = new Polygon[]{};
+
+            for (final Polygon poly : polys)
+                for (int i = 0; i < poly.numRings(); i++) {
+                    final net.postgis.jdbc.geometry.Point[] points = poly.getRing(i).getPoints();
+
+                    path.reset();
+                    boolean initial = true;
+                    for (final Point point : points) {
+                        final double relX = (point.x - box.x1) / box.res;
+                        final double relY = TILE_SIZES[tileSizeIdx] - (point.y - box.y1) / box.res;
+                        if (initial) {
+                            initial = false;
+                            path.moveTo(relX, relY);
+                        }
+                        path.lineTo(relX, relY);
+                    }
+                    g.setPaint(geomColor.color);
+                    g.fill(path);
+                }
+        }
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img.bi, "png", baos);
+        //Files.write(new File("/tmp/test1.png").toPath(), baos.toByteArray());
+        return baos.toByteArray();
     }
 }
