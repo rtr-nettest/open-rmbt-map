@@ -145,7 +145,22 @@ public class MarkerService {
                     //@TODO ThS
                     //capabilities.getClassificationCapability().setCount(mapFilterObj.getBoolean(key) ? 4 : ClassificationCapability.DEFAULT_CLASSIFICATON_COUNT);
                 }
-
+                if (parameters.getFilter().getPeriod() != null) {
+                    MapServerOptions.MapFilter periodFilter = MapServerOptions.getMapFilterMap().get("period");
+                    filters.add(periodFilter.getFilter(parameters.getFilter().getPeriod().toString()));
+                }
+                if (parameters.getFilter().getOperator() != null) {
+                    MapServerOptions.MapFilter periodFilter = MapServerOptions.getMapFilterMap().get("operator");
+                    filters.add(periodFilter.getFilter(parameters.getFilter().getOperator()));
+                }
+                if (parameters.getFilter().getProvider() != null) {
+                    MapServerOptions.MapFilter periodFilter = MapServerOptions.getMapFilterMap().get("provider");
+                    filters.add(periodFilter.getFilter(parameters.getFilter().getProvider()));
+                }
+                if (parameters.getFilter().getTechnology() != null) {
+                    MapServerOptions.MapFilter periodFilter = MapServerOptions.getMapFilterMap().get("technology");
+                    filters.add(periodFilter.getFilter(parameters.getFilter().getTechnology()));
+                }
                 //TODO handle all other ThS
                 /*
                 while (keys.hasNext())

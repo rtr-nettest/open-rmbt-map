@@ -71,6 +71,14 @@ public class MarkerRequest {
         @JsonProperty("four_color")
         Boolean fourColorSupported;
 
-        //@TODO: operator, provider, technology, period, age, user_server_selection
+        //@TODO: age, user_server_selection
+        @JsonProperty("period")
+        Integer period;
+
+        String operator;
+
+        String provider;
+
+        String technology;
     }
 }
