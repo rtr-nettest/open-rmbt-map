@@ -31,7 +31,7 @@ class MarkerServiceTest {
                 null,
                 new MarkerRequest.MarkerRequestCoordinates(1818747.1904024533, 6137926.386049775, 13, null, null, null),
                 new MarkerRequest.MarkerRequestMapOptions("mobile/download"),
-                new MarkerRequest.MarkerRequestFilter("160d5145-5ad2-4e0e-9c5a-b377e63d4eda",null),
+                new MarkerRequest.MarkerRequestFilter("160d5145-5ad2-4e0e-9c5a-b377e63d4eda",null, null, null, null, null),
                 new CapabilitiesRequest(new CapabilitiesRequest.ClassificationRequest(4),null));
 
         MarkerResponse markersForPoint = markerService.getMarkersForPoint(mr);
