@@ -152,58 +152,7 @@ public class PointTileService extends TileGenerationService {
                 if (_emptyTile)
                     return baseTile;
 
-                final Image img = images[tileSizeIdx];
-                final Graphics2D g = img.g;
-
-                g.setBackground(new Color(0, 0, 0, 0));
-                g.clearRect(0, 0, img.width, img.height);
-
-                if (baseTile != null) {
-                    final ByteArrayInputStream bais = new ByteArrayInputStream(baseTile);
-                    final BufferedImage image = ImageIO.read(bais);
-                    g.drawImage(image, 0, 0, null);
-                }
-
-                g.setComposite(AlphaComposite.Src);
-                g.setStroke((new BasicStroke(((float) diameter / 8f))));
-
-                final Path2D.Double triangle = new Path2D.Double();
-                final Ellipse2D.Double shape = new Ellipse2D.Double(0, 0, diameter, diameter);
-
-                for (final Dot dot : dots) {
-                    final double relX = (dot.x - box.x1) / box.res;
-                    final double relY = TILE_SIZES[tileSizeIdx] - (dot.y - box.y1) / box.res;
-
-                    if (dot.highlight) // triangle
-                    {
-                        triangle.reset();
-                        triangle.moveTo(relX, relY - triangleHeight / 3 * 2);
-                        triangle.lineTo(relX - triangleSide / 2, relY + triangleHeight / 3);
-                        triangle.lineTo(relX + triangleSide / 2, relY + triangleHeight / 3);
-                        triangle.closePath();
-                        if (!noFill) {
-                            g.setPaint(dot.color);
-                            g.fill(triangle);
-                        }
-                        g.setPaint(highlightBorderColor);
-                        g.draw(triangle);
-                    } else // circle
-                    {
-                        shape.x = relX - radius;
-                        shape.y = relY - radius;
-                        if (!noFill) {
-                            g.setPaint(dot.color);
-                            g.fill(shape);
-                        }
-                        g.setPaint(borderColor);
-                        g.draw(shape);
-                    }
-                }
-
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(img.bi, "png", baos);
-                final byte[] data = baos.toByteArray();
-                //Files.write(new File("/tmp/test1.png").toPath(),baos.toByteArray());
+                final byte[] data = drawImage(baseTile, diameter, dots, tileSizeIdx, noFill, triangleHeight, triangleSide, box, highlightBorderColor, radius, borderColor);
                 return data;
             } catch (SQLException | IOException ex) {
                 throw new RuntimeException(ex);
@@ -215,6 +164,61 @@ public class PointTileService extends TileGenerationService {
         return null;
     }
 
+    private synchronized byte[] drawImage(byte[] baseTile, double diameter, List<Dot> dots, int tileSizeIdx, boolean noFill, double triangleHeight, double triangleSide, DBox box,
+                                          Color highlightBorderColor, double radius, Color borderColor) throws IOException {
+        final Image img = images[tileSizeIdx];
+        final Graphics2D g = img.g;
+
+        g.setBackground(new Color(0, 0, 0, 0));
+        g.clearRect(0, 0, img.width, img.height);
+
+        if (baseTile != null) {
+            final ByteArrayInputStream bais = new ByteArrayInputStream(baseTile);
+            final BufferedImage image = ImageIO.read(bais);
+            g.drawImage(image, 0, 0, null);
+        }
+
+        g.setComposite(AlphaComposite.Src);
+        g.setStroke((new BasicStroke(((float) diameter / 8f))));
+
+        final Path2D.Double triangle = new Path2D.Double();
+        final Ellipse2D.Double shape = new Ellipse2D.Double(0, 0, diameter, diameter);
+
+        for (final Dot dot : dots) {
+            final double relX = (dot.x - box.x1) / box.res;
+            final double relY = TILE_SIZES[tileSizeIdx] - (dot.y - box.y1) / box.res;
+
+            if (dot.highlight) // triangle
+            {
+                triangle.reset();
+                triangle.moveTo(relX, relY - triangleHeight / 3 * 2);
+                triangle.lineTo(relX - triangleSide / 2, relY + triangleHeight / 3);
+                triangle.lineTo(relX + triangleSide / 2, relY + triangleHeight / 3);
+                triangle.closePath();
+                if (!noFill) {
+                    g.setPaint(dot.color);
+                    g.fill(triangle);
+                }
+                g.setPaint(highlightBorderColor);
+                g.draw(triangle);
+            } else // circle
+            {
+                shape.x = relX - radius;
+                shape.y = relY - radius;
+                if (!noFill) {
+                    g.setPaint(dot.color);
+                    g.fill(shape);
+                }
+                g.setPaint(borderColor);
+                g.draw(shape);
+            }
+        }
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img.bi, "png", baos);
+        final byte[] data = baos.toByteArray();
+        return data;
+    }
 
     @Getter
     @Setter
