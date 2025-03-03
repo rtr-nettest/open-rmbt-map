@@ -10,6 +10,7 @@ import at.rtr.rmbt.map.util.TileParameters;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +30,7 @@ public class TilesController {
 
     ////https://m-cloud.netztest.at/RMBTMapServer/tiles/points/12/2232/1428.png?null&statistical_method=0.5&period=180&map_options=mobile/download
     @Operation(summary = "Get point tile for a specific point /zoom/x/y")
-    @GetMapping(value = URIConstants.TILES_ENDPOINT_VARS, produces = "image/png")
+    @GetMapping(value = URIConstants.TILES_ENDPOINT_VARS, produces = {"image/png", "application/json"})
     //Unfortunately, DTO with renaming params seems to not be supported, therefore this list
     public byte[] getTiles(@PathVariable URIConstants.TILE_TYPE type,
                            @PathVariable int zoom,
@@ -72,7 +73,7 @@ public class TilesController {
     }
 
     @Operation(summary = "Get point tile for a specific point /zoom/x/y")
-    @GetMapping(value = URIConstants.TILES_ENDPOINT, produces = "image/png")
+    @GetMapping(value = URIConstants.TILES_ENDPOINT, produces = {"image/png", "application/json"})
     //Unfortunately, DTO with renaming params seems to not be supported, therefore this list
     public ResponseEntity<byte[]> getTilesbyPath(@PathVariable URIConstants.TILE_TYPE type,
                            @RequestParam(name = "path", required = true) String path,
@@ -104,7 +105,7 @@ public class TilesController {
             return ResponseEntity.badRequest().body(null);
         }
 
-        return ResponseEntity.ok(getTiles(type, pathParts.get(0), pathParts.get(1), pathParts.get(2),
+        return ResponseEntity.status(200).contentType(MediaType.IMAGE_PNG).body(getTiles(type, pathParts.get(0), pathParts.get(1), pathParts.get(2),
                 statisticalMethod, size.intValue(), mapOptions, developerCode, transparency, pointDiameter,
                 noFill, noColor, hightlightUuid, operator, provider, technology, period, age, userServerSelection));
     }
