@@ -156,9 +156,9 @@ public class ShapeTileService extends TileGenerationService {
         return null;
     }
 
-    private synchronized byte[] drawImage(int tileSizeIdx, DBox box, List<GeometryColor> geoms) throws IOException {
+    private byte[] drawImage(int tileSizeIdx, DBox box, List<GeometryColor> geoms) throws IOException {
 
-        final Image img = images[tileSizeIdx];
+        final Image img = generateImage(tileSizeIdx);
         final Graphics2D g = img.g;
 
         g.setBackground(new Color(0, 0, 0, 0));

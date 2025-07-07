@@ -18,9 +18,7 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -164,9 +162,9 @@ public class PointTileService extends TileGenerationService {
         return null;
     }
 
-    private synchronized byte[] drawImage(byte[] baseTile, double diameter, List<Dot> dots, int tileSizeIdx, boolean noFill, double triangleHeight, double triangleSide, DBox box,
+    private byte[] drawImage(byte[] baseTile, double diameter, List<Dot> dots, int tileSizeIdx, boolean noFill, double triangleHeight, double triangleSide, DBox box,
                                           Color highlightBorderColor, double radius, Color borderColor) throws IOException {
-        final Image img = images[tileSizeIdx];
+        final Image img = generateImage(tileSizeIdx);
         final Graphics2D g = img.g;
 
         g.setBackground(new Color(0, 0, 0, 0));

@@ -16,7 +16,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.redis.core.script.DigestUtils;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -34,7 +33,8 @@ import java.util.Map;
 public abstract class TileGenerationService {
     protected static final int[] TILE_SIZES = new int[] { 256, 512, 768 };
     protected static final byte[][] EMPTY_IMAGES = new byte[TILE_SIZES.length][];
-    protected final Image[] images = new Image[TILE_SIZES.length];
+    //protected final Image[] images = new Image[TILE_SIZES.length];
+    //protected final Image[] images = new Image[TILE_SIZES.length];
 
     protected static final byte[] EMPTY_MARKER = "EMPTY".getBytes();
 
@@ -47,7 +47,7 @@ public abstract class TileGenerationService {
     @PostConstruct
     private void initializeStructures() {
         generateEmpty();
-        generateImages();
+        //generateImages();
     }
 
     private void generateEmpty() {
@@ -62,7 +62,7 @@ public abstract class TileGenerationService {
             EMPTY_IMAGES[i] = baos.toByteArray();
         }
     }
-
+    /*
     private void generateImages() {
         for (int i = 0; i < TILE_SIZES.length; i++)
         {
@@ -79,6 +79,21 @@ public abstract class TileGenerationService {
 
             images[i] = image;
         }
+    }*/
+
+    protected Image generateImage(int tileSizeIdx) {
+        final int tileSize = TILE_SIZES[tileSizeIdx];
+        final Image image = new Image();
+        image.bi = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
+        image.g = image.bi.createGraphics();
+        image.g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        image.g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
+        image.g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        image.g.setStroke(new BasicStroke(1f));
+        image.width = image.bi.getWidth();
+        image.height = image.bi.getHeight();
+
+        return image;
     }
 
 

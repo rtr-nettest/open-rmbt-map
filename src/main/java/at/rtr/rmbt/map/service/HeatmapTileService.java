@@ -224,10 +224,10 @@ public class HeatmapTileService extends TileGenerationService {
         return null;
     }
 
-    private synchronized byte[] drawImage(int tileSizeIdx, int tileSize, int partSizeFactor,
+    private byte[] drawImage(int tileSizeIdx, int tileSize, int partSizeFactor,
                                           int partSizePixels, int fetchPartsX, double transparency,
                                           double[] values, int[] countsRel, MapServerOptions.MapOption mo) {
-        final Image img = images[tileSizeIdx];
+        final Image img = generateImage(tileSizeIdx);
 
         final int[] pixels = pixelBuffers[tileSizeIdx];
         for (int y = 0; y < tileSize; y++)
