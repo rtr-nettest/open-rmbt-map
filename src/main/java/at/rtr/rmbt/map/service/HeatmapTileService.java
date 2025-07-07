@@ -61,22 +61,10 @@ public class HeatmapTileService extends TileGenerationService {
 
     private final static double[][] FACTORS = new double[8][]; // lookup table
 
-    private final int[][] pixelBuffers = new int[TILE_SIZES.length][];
-
     // for speedup
     @PostConstruct
     private void initialize() {
         initializeFactors();
-        initializePixelBuffers();
-    }
-
-    private void initializePixelBuffers() {
-        for (int i = 0; i < TILE_SIZES.length; i++)
-        {
-            final int tileSize = TILE_SIZES[i];
-            pixelBuffers[i] = new int[tileSize * tileSize];
-
-        }
     }
 
     private void initializeFactors() {
@@ -229,7 +217,7 @@ public class HeatmapTileService extends TileGenerationService {
                                           double[] values, int[] countsRel, MapServerOptions.MapOption mo) {
         final Image img = generateImage(tileSizeIdx);
 
-        final int[] pixels = pixelBuffers[tileSizeIdx];
+        final int[] pixels = new int[tileSize * tileSize];
         for (int y = 0; y < tileSize; y++)
             for (int x = 0; x < tileSize; x++)
             {
