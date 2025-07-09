@@ -33,7 +33,7 @@ jobs:
         run: |
           cd  target
           ls -l *
-          zip mapserver.zip *
+          zip mapserver.zip *.war
       - name: Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
