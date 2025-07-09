@@ -5,7 +5,6 @@ name: WAR build
 
 on:
   push:
-    branches: [ master ]
 jobs:
   build:
 
@@ -28,4 +27,18 @@ jobs:
         with:
           name: mapserver-war
           path: target/RMBTMapServer-*.war
-          retention-days: 365
+          retention-days: 60
+
+      - name: Intermediate file check
+        run: |
+          cd  target
+          ls -l *
+          zip mapserver.zip *
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files:
+            target/mapserver.zip
+
+
