@@ -1,11 +1,13 @@
 package at.rtr.rmbt.map;
 
 
+import at.rtr.rmbt.map.filter.ApiLoggingFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -52,5 +54,13 @@ public class MapServerConfiguration extends SpringBootServletInitializer {
         executor.setAwaitTerminationSeconds(60);  // Timeout for waiting for tasks to complete
         executor.initialize();  // Initializes the thread pool
         return executor;
+    }
+
+    @Bean
+    public FilterRegistrationBean<ApiLoggingFilter> loggingFilter() {
+        FilterRegistrationBean<ApiLoggingFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new ApiLoggingFilter("reqId"));
+        registrationBean.addUrlPatterns("*");
+        return registrationBean;
     }
 }
