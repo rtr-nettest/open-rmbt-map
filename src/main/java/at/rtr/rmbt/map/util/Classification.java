@@ -18,6 +18,8 @@ package at.rtr.rmbt.map.util;
 
 public final class Classification
 {
+    public static final int DEFAULT_CLASSIFICATON_COUNT = 3;
+
     public static final int[] THRESHOLD_UPLOAD = { 50000, 5000, 2500 };          // 100Mbit/s, 10Mbit/s, 5Mbit/s
     public static final String[] THRESHOLD_UPLOAD_CAPTIONS = { "1", "0.5" };
 

@@ -71,6 +71,7 @@ public class MarkerService {
         boolean useXY = false;
         boolean useLatLon = false;
         CapabilitiesRequest capabilities = parameters.getCapabilities();
+        int classificationCount = capabilities != null && capabilities.getClassification() != null ? capabilities.getClassification().getCount() : Classification.DEFAULT_CLASSIFICATON_COUNT;
 
         if (parameters.getCoordinates() != null) {
             MarkerRequest.MarkerRequestCoordinates coords = parameters.getCoordinates();
@@ -303,7 +304,7 @@ public class MarkerService {
                                 FormatUtils.formatSpeed(fieldDown), labels.getString("RESULT_DOWNLOAD_UNIT"));
                         singleItem.setValue(downloadString);
                         singleItem.setClassification(
-                                Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, capabilities.getClassification().getCount()));
+                                Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
 
 
                         markerResponse.getMeasurement().add(singleItem);
@@ -316,16 +317,16 @@ public class MarkerService {
                                 FormatUtils.formatSpeed(fieldUp),
                                 labels.getString("RESULT_UPLOAD_UNIT"));
                         singleItem.setValue(uploadString);
-                        singleItem.setClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, capabilities.getClassification().getCount()));
+                        singleItem.setClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
 
                         markerResponse.getMeasurement().add(singleItem);
 
                         MarkerResponse.SingleMarkerMeasurementResult measurementResult = new MarkerResponse.SingleMarkerMeasurementResult();
                         {
                             measurementResult.setDownloadKbps(fieldDown);
-                            measurementResult.setDownloadClassification(Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, capabilities.getClassification().getCount()));
+                            measurementResult.setDownloadClassification(Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
                             measurementResult.setUploadKbps(fieldUp);
-                            measurementResult.setUploadClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, capabilities.getClassification().getCount()));
+                            measurementResult.setUploadClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
                         }
 
                         final long fieldPing = rs.getPingMedian();
@@ -334,11 +335,11 @@ public class MarkerService {
                         final String pingString = String.format("%s %s", FormatUtils.formatPing(rs.getPingMedian()),
                                 labels.getString("RESULT_PING_UNIT"));
                         singleItem.setValue(pingString);
-                        singleItem.setClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, capabilities.getClassification().getCount()));
+                        singleItem.setClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
 
                         markerResponse.getMeasurement().add(singleItem);
                         measurementResult.setPingMs(fieldPing / 1000000d);
-                        measurementResult.setPingClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, capabilities.getClassification().getCount()));
+                        measurementResult.setPingClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
 
                         final Integer networkType = rs.getNetworkType();
 
@@ -350,10 +351,10 @@ public class MarkerService {
                             singleItem = new MarkerResponse.SingleMarkerMetricItem();
                             singleItem.setTitle(labels.getString("RESULT_SIGNAL"));
                             singleItem.setValue(signalValue + " " + labels.getString("RESULT_SIGNAL_UNIT"));
-                            singleItem.setClassification(Classification.classify(threshold, signalValue, capabilities.getClassification().getCount()));
+                            singleItem.setClassification(Classification.classify(threshold, signalValue, classificationCount));
                             markerResponse.getMeasurement().add(singleItem);
                             measurementResult.setSignalStrength(signalValue);
-                            measurementResult.setSignalClassification(Classification.classify(threshold, signalValue, capabilities.getClassification().getCount()));
+                            measurementResult.setSignalClassification(Classification.classify(threshold, signalValue, classificationCount));
                         }
 
 
@@ -363,10 +364,10 @@ public class MarkerService {
                             singleItem = new MarkerResponse.SingleMarkerMetricItem();
                             singleItem.setTitle(labels.getString("RESULT_LTE_RSRP"));
                             singleItem.setValue(lteRsrpValue + " " + labels.getString("RESULT_LTE_RSRP_UNIT"));
-                            singleItem.setClassification(Classification.classify(threshold, lteRsrpValue, capabilities.getClassification().getCount()));
+                            singleItem.setClassification(Classification.classify(threshold, lteRsrpValue, classificationCount));
                             markerResponse.getMeasurement().add(singleItem);
                             measurementResult.setLteRsrp(lteRsrpValue);
-                            measurementResult.setSignalClassification(Classification.classify(threshold, lteRsrpValue, capabilities.getClassification().getCount()));
+                            measurementResult.setSignalClassification(Classification.classify(threshold, lteRsrpValue, classificationCount));
                         }
 
                         markerResponse.setResult(measurementResult);
