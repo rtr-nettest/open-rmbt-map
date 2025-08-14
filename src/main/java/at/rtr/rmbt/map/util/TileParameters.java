@@ -25,6 +25,8 @@ public class TileParameters implements Serializable {
     protected final double transparency;
     protected final String developerCode;
 
+    private Integer period;
+
     @ToString
     public final static class Path {
         protected final int zoom, x, y;
@@ -136,6 +138,7 @@ public class TileParameters implements Serializable {
         }
         if (params.getPeriod() != null) {
             _filterMap.put("period", params.getPeriod().toString());
+            period = params.getPeriod();
         }
         if (params.getAge() != null) {
             _filterMap.put("age", params.getAge().toString());
@@ -174,6 +177,8 @@ public class TileParameters implements Serializable {
     public boolean isNoCache()  {
         return false;
     };
+
+    public Integer getPeriod() { return period; }
 
 
     @ToString(callSuper = true)

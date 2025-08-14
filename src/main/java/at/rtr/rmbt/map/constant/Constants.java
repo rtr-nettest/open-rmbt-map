@@ -19,6 +19,8 @@ public interface Constants {
     int TILE_CACHE_STALE = 60*60;
     int TILE_CACHE_EXPIRE = 24*60*60;
 
+    int TILE_SHORT_CACHE_EXPIRE = 5*60;
+
 
     final static String[] OPTION_TECHNOLOGY_TITLE = new String[] {
             "ANY", "3G_4G_5G", "4G_5G", "3G_4G", "2G", "3G", "4G", "5G"};

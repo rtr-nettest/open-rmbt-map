@@ -135,6 +135,12 @@ public abstract class TileGenerationService {
         {
 
             CachedTile cacheObject = cache.get(cacheKey, CachedTile.class);
+
+            boolean isNotRecent = Instant.now().minus(Constants.TILE_SHORT_CACHE_EXPIRE, ChronoUnit.SECONDS).isAfter(cacheObject.getCreationTime());
+            if (isNotRecent && p.getPeriod() <= 2) {
+                cacheObject = null;
+            }
+
             if (cacheObject != null)
             {
                 boolean isStale = Instant.now().minus(Constants.TILE_CACHE_STALE, ChronoUnit.SECONDS).isAfter(cacheObject.getCreationTime());

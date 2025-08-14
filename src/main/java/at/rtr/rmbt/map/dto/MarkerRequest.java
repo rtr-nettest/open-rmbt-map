@@ -28,7 +28,7 @@ public class MarkerRequest {
     @JsonProperty("filter")
     MarkerRequestFilter filter;
 
-    @JsonProperty("capabilities")
+    @JsonProperty(value = "capabilities", required = false)
     private final CapabilitiesRequest capabilities;
 
     @Setter
