@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ApplicationVersionService {
-    final String SYSTEM_UUID_KEY = "system_UUID";
+    public final static String SYSTEM_UUID_KEY = "system_UUID";
 
     @Value("${git.branch}")
     private String branch;
