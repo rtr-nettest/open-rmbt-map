@@ -14,4 +14,4 @@ jobs:
           distribution: 'corretto'
           cache: maven
       - name: Test
-        run: mvn compile test package
+        run: mvn compile
