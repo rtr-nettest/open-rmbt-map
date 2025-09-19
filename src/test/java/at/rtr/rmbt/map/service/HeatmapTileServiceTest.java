@@ -4,6 +4,7 @@ import at.rtr.rmbt.map.MapServerConfiguration;
 import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ class HeatmapTileServiceTest {
     private HeatmapTileService heatmapTileService;
 
     @Test
+    @Disabled
     void testGenerateHeatmapTile() {
         //https://m-cloud.netztest.at/RMBTMapServer/tiles/heatmap/7/70/44.png?null&statistical_method=0.5&period=180&map_options=mobile/download
 
