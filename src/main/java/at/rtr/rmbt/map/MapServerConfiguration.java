@@ -48,7 +48,7 @@ public class MapServerConfiguration extends SpringBootServletInitializer {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);  // Minimum number of threads in the pool
         executor.setMaxPoolSize(32);  // Maximum number of threads in the pool
-        executor.setQueueCapacity(25);  // Queue capacity for pending tasks
+        executor.setQueueCapacity(executor.getMaxPoolSize() * 10);  // Queue capacity for pending tasks
         executor.setThreadNamePrefix("AsyncExecutor-");  // Prefix for thread names
         executor.setWaitForTasksToCompleteOnShutdown(true);  // Ensures tasks complete on shutdown
         executor.setAwaitTerminationSeconds(60);  // Timeout for waiting for tasks to complete

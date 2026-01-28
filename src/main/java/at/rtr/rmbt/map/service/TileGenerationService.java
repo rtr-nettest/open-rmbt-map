@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.RejectedExecutionException;
 
 @Slf4j
 public abstract class TileGenerationService {
@@ -163,7 +164,11 @@ public abstract class TileGenerationService {
                             cache.put(cacheKey, ct);
                         }
                     };
-                    executor.execute(refreshCacheRunnable);
+                    try {
+                        executor.execute(refreshCacheRunnable);
+                    } catch (RejectedExecutionException e) {
+                        log.error("could not add to background: " + cacheKey + "; " + e.getMessage());
+                    }
 
                 }
                 return data;
