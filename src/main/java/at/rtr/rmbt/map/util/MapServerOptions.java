@@ -378,8 +378,8 @@ final public class MapServerOptions
                             true));
 
             put("mobile/signal",
-                    new MapOption("merged_signal",
-                            "merged_signal is not null AND network_type not in (0, 97, 98, 99)",
+                    new MapOption("COALESCE((t.lte_rsrp + 10), t.signal_strength)",
+                            "(t.lte_rsrp is not null OR t.signal_strength is not null) AND network_type not in (0, 97, 98, 99)",
                             colors_rgb,
                             signal_mobile,
                             captions_mobile,

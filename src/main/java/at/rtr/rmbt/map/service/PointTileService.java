@@ -64,8 +64,8 @@ public class PointTileService extends TileGenerationService {
         for (final MapServerOptions.SQLFilter sf : filters)
             whereSQL.append(" AND ").append(sf.getWhere());
 
-        final String sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, \"%s\" val"
-                + " FROM v_test2 t"
+        final String sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, %s val"
+                + " FROM test t"
                 + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
                 + " WHERE "
                 + " %s"

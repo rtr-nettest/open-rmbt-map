@@ -211,7 +211,7 @@ public class MarkerService {
                                 + " COALESCE(mnwk.shortname,mnwk.name) \"mobileNetworkName\","
                                 + " COALESCE(msim.shortname,msim.name) \"mobileSimName\", "
                                 + (highlightUUID == null ? " NULL AS uid, NULL AS uuid " : " c.uid, c.uuid")
-                                + " FROM v_test2 t"
+                                + " FROM test t"
                                 + " LEFT JOIN mccmnc2name mnwk ON t.mobile_network_id=mnwk.uid"
                                 + " LEFT JOIN mccmnc2name msim ON t.mobile_sim_id=msim.uid"
                                 + " LEFT JOIN provider prov    ON t.provider_id=prov.uid"
