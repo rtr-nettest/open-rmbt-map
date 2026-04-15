@@ -125,9 +125,13 @@ public class MarkerService {
 
             final MapServerOptions.MapOption mo = MapServerOptions.getMapOptionMap().get(optionStr);
 
-            final List<MapServerOptions.SQLFilter> filters = new ArrayList<MapServerOptions.SQLFilter>(MapServerOptions.getDefaultMapFilters());
-            filters.add(MapServerOptions.getAccuracyMapFilter());
-
+            final List<MapServerOptions.SQLFilter> filters;
+            if (mo.isFences) {
+                filters = new ArrayList<MapServerOptions.SQLFilter>(MapServerOptions.getGetDefaultFencesFilter());
+            } else {
+                filters = new ArrayList<MapServerOptions.SQLFilter>(MapServerOptions.getDefaultMapFilters());
+                filters.add(MapServerOptions.getAccuracyMapFilter());
+            }
 
             if (parameters.getFilter() != null) {
                 //final Iterator<?> keys = mapFilterObj.keys(); //@TODO
@@ -193,38 +197,71 @@ public class MarkerService {
                 else
                     whereSQL.setLength(0);
 
-                final String sql = String
-                        //need to put alias in quote so postgres does respect case-sensitiveness
-                        //also, the number of columns must not differ
-                        .format("SELECT"
-                                + (useLatLon ? " geo_lat lat, geo_long lon, NULL x, NULL y"
-                                : " NULL lat, NULL lon, ST_X(t.location) x, ST_Y(t.location) y")
-                                + ", t.time, t.timezone, "
-                                + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", t.ping_median \"pingMedian\", t.network_type \"networkType\","
-                                + " t.signal_strength \"signalStrength\", t.lte_rsrp \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
-                                + " t.network_operator_name \"networkOperatorName\", t.network_operator \"networkOperator\","
-                                + " t.network_sim_operator \"networkSimOperator\", t.roaming_type \"roamingType\", t.public_ip_as_name, " //TODO: sim_operator obsoleted by sim_name
-                                + " mprov.shortname \"mobileProviderName\"," // TODO: obsoleted by mobile_network_name
-                                + " prov.shortname provider_text, t.open_test_uuid openTestUuid,"
-                                + " COALESCE(mprov.shortname, t.network_operator_name, prov.shortname, msim.shortname,msim.name,"
-                                + "    prov.name, mprov.name, t.public_ip_as_name, network_sim_operator) \"providerName\", "
-                                + " COALESCE(mnwk.shortname,mnwk.name) \"mobileNetworkName\","
-                                + " COALESCE(msim.shortname,msim.name) \"mobileSimName\", "
-                                + (highlightUUID == null ? " NULL AS uid, NULL AS uuid " : " c.uid, c.uuid")
-                                + " FROM test t"
-                                + " LEFT JOIN mccmnc2name mnwk ON t.mobile_network_id=mnwk.uid"
-                                + " LEFT JOIN mccmnc2name msim ON t.mobile_sim_id=msim.uid"
-                                + " LEFT JOIN provider prov    ON t.provider_id=prov.uid"
-                                + " LEFT JOIN provider mprov   ON t.mobile_provider_id=mprov.uid"
-                                + (highlightUUID == null ? ""
-                                : " LEFT JOIN client c ON (t.client_id=c.uid AND t.uuid=?)")
-                                + " WHERE"
-                                + " %s"
-                                + (requestOpenTestUUID != null ?
-                                " t.open_test_uuid=? "
-                                : " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)")
-                                + " ORDER BY" + (highlightUUID == null ? "" : " c.uid ASC,")
-                                + " t.uid DESC" + " LIMIT 5", whereSQL);
+                final String sql;
+                if (mo.isFences) {
+                    sql = String
+                            .format("SELECT"
+                                    + (useLatLon ? " ST_Y(f.geom4326) lat, ST_X(f.geom4326) lon, NULL x, NULL y"
+                                    : " NULL lat, NULL lon, ST_X(ST_Transform(f.geom4326, 900913)) x, ST_Y(ST_Transform(f.geom4326, 900913)) y")
+                                    + ", t.time, t.timezone, "
+                                    + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", t.ping_median \"pingMedian\", t.network_type \"networkType\","
+                                    + " t.signal_strength \"signalStrength\", t.lte_rsrp \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
+                                    + " t.network_operator_name \"networkOperatorName\", t.network_operator \"networkOperator\","
+                                    + " t.network_sim_operator \"networkSimOperator\", t.roaming_type \"roamingType\", t.public_ip_as_name, "
+                                    + " mprov.shortname \"mobileProviderName\","
+                                    + " prov.shortname provider_text, t.open_test_uuid openTestUuid,"
+                                    + " COALESCE(mprov.shortname, t.network_operator_name, prov.shortname, msim.shortname,msim.name,"
+                                    + "    prov.name, mprov.name, t.public_ip_as_name, network_sim_operator) \"providerName\", "
+                                    + " COALESCE(mnwk.shortname,mnwk.name) \"mobileNetworkName\","
+                                    + " COALESCE(msim.shortname,msim.name) \"mobileSimName\", "
+                                    + (highlightUUID == null ? " NULL AS uid, NULL AS uuid " : " c.uid, c.uuid")
+                                    + " FROM fences f"
+                                    + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
+                                    + " LEFT JOIN mccmnc2name mnwk ON t.mobile_network_id=mnwk.uid"
+                                    + " LEFT JOIN mccmnc2name msim ON t.mobile_sim_id=msim.uid"
+                                    + " LEFT JOIN provider prov    ON t.provider_id=prov.uid"
+                                    + " LEFT JOIN provider mprov   ON t.mobile_provider_id=mprov.uid"
+                                    + (highlightUUID == null ? ""
+                                    : " LEFT JOIN client c ON (t.client_id=c.uid AND t.uuid=?)")
+                                    + " WHERE"
+                                    + " %s"
+                                    + (requestOpenTestUUID != null ?
+                                    " t.open_test_uuid=? "
+                                    : " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913), 4326)")
+                                    + " ORDER BY" + (highlightUUID == null ? "" : " c.uid ASC,")
+                                    + " f.uid DESC" + " LIMIT 5", whereSQL);
+                } else {
+                    sql = String
+                            .format("SELECT"
+                                    + (useLatLon ? " geo_lat lat, geo_long lon, NULL x, NULL y"
+                                    : " NULL lat, NULL lon, ST_X(t.location) x, ST_Y(t.location) y")
+                                    + ", t.time, t.timezone, "
+                                    + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", t.ping_median \"pingMedian\", t.network_type \"networkType\","
+                                    + " t.signal_strength \"signalStrength\", t.lte_rsrp \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
+                                    + " t.network_operator_name \"networkOperatorName\", t.network_operator \"networkOperator\","
+                                    + " t.network_sim_operator \"networkSimOperator\", t.roaming_type \"roamingType\", t.public_ip_as_name, "
+                                    + " mprov.shortname \"mobileProviderName\","
+                                    + " prov.shortname provider_text, t.open_test_uuid openTestUuid,"
+                                    + " COALESCE(mprov.shortname, t.network_operator_name, prov.shortname, msim.shortname,msim.name,"
+                                    + "    prov.name, mprov.name, t.public_ip_as_name, network_sim_operator) \"providerName\", "
+                                    + " COALESCE(mnwk.shortname,mnwk.name) \"mobileNetworkName\","
+                                    + " COALESCE(msim.shortname,msim.name) \"mobileSimName\", "
+                                    + (highlightUUID == null ? " NULL AS uid, NULL AS uuid " : " c.uid, c.uuid")
+                                    + " FROM test t"
+                                    + " LEFT JOIN mccmnc2name mnwk ON t.mobile_network_id=mnwk.uid"
+                                    + " LEFT JOIN mccmnc2name msim ON t.mobile_sim_id=msim.uid"
+                                    + " LEFT JOIN provider prov    ON t.provider_id=prov.uid"
+                                    + " LEFT JOIN provider mprov   ON t.mobile_provider_id=mprov.uid"
+                                    + (highlightUUID == null ? ""
+                                    : " LEFT JOIN client c ON (t.client_id=c.uid AND t.uuid=?)")
+                                    + " WHERE"
+                                    + " %s"
+                                    + (requestOpenTestUUID != null ?
+                                    " t.open_test_uuid=? "
+                                    : " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)")
+                                    + " ORDER BY" + (highlightUUID == null ? "" : " c.uid ASC,")
+                                    + " t.uid DESC" + " LIMIT 5", whereSQL);
+                }
 
                 //System.out.println("SQL: " + sql);
                 ps = entityManager.createNativeQuery(sql, "MarkerResultMapping");
