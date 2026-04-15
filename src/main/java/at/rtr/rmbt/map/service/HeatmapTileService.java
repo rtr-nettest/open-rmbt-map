@@ -114,13 +114,13 @@ public class HeatmapTileService extends TileGenerationService {
         if (mo.isFences) {
             sql = String.format("SELECT count(%1$s) count,"
                     + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
-                    + " ST_X(ST_SnapToGrid(ST_Transform(f.geom4326, 900913), ?,?,?,?)) gx,"
-                    + " ST_Y(ST_SnapToGrid(ST_Transform(f.geom4326, 900913), ?,?,?,?)) gy"
+                    + " ST_X(ST_SnapToGrid(ST_Transform(f.geom4326, 3857), ?,?,?,?)) gx,"
+                    + " ST_Y(ST_SnapToGrid(ST_Transform(f.geom4326, 3857), ?,?,?,?)) gy"
                     + " FROM fences f"
                     + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
                     + " WHERE "
                     + " %2$s"
-                    + " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913), 4326)"
+                    + " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 3857), 4326)"
                     + " GROUP BY gx,gy", mo.valueColumnLog, whereSQL);
         } else {
             sql = String.format("SELECT count(%1$s) count,"
