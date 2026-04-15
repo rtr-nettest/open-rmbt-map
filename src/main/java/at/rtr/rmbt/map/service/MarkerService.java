@@ -202,7 +202,7 @@ public class MarkerService {
                     sql = String
                             .format("SELECT"
                                     + (useLatLon ? " ST_Y(f.geom4326) lat, ST_X(f.geom4326) lon, NULL x, NULL y"
-                                    : " NULL lat, NULL lon, ST_X(ST_Transform(f.geom4326, 3857)) x, ST_Y(ST_Transform(f.geom4326, 3857)) y")
+                                    : " NULL lat, NULL lon, ST_X(ST_Transform(f.geom4326, 900913)) x, ST_Y(ST_Transform(f.geom4326, 900913)) y")
                                     + ", t.time, t.timezone, "
                                     + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", t.ping_median \"pingMedian\", t.network_type \"networkType\","
                                     + " t.signal_strength \"signalStrength\", t.lte_rsrp \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
@@ -227,7 +227,7 @@ public class MarkerService {
                                     + " %s"
                                     + (requestOpenTestUUID != null ?
                                     " t.open_test_uuid=? "
-                                    : " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 3857), 4326)")
+                                    : " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913), 4326)")
                                     + " ORDER BY" + (highlightUUID == null ? "" : " c.uid ASC,")
                                     + " f.uid DESC" + " LIMIT 5", whereSQL);
                 } else {

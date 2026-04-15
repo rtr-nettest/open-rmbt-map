@@ -68,13 +68,13 @@ public class PointTileService extends TileGenerationService {
 
         final String sql;
         if (mo.isFences) {
-            sql = String.format("SELECT ST_X(ST_Transform(f.geom4326, 3857)) gx, ST_Y(ST_Transform(f.geom4326, 3857)) gy, NULL count, %s val"
+            sql = String.format("SELECT ST_X(ST_Transform(f.geom4326, 900913)) gx, ST_Y(ST_Transform(f.geom4326, 900913)) gy, NULL count, %s val"
                     + " FROM fences f"
                     + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
                     + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
                     + " WHERE "
                     + " %s"
-                    + " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 3857), 4326)"
+                    + " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913), 4326)"
                     + " ORDER BY"
                     + " f.uid", mo.valueColumn, whereSQL);
         } else {
