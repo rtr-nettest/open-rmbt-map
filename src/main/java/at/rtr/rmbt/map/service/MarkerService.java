@@ -334,49 +334,54 @@ public class MarkerService {
                         final long time = date.getTime();
                         markerResponse.setTime(time);
 
-                        final int fieldDown = rs.getSpeedDownload().intValue();
-                        MarkerResponse.SingleMarkerMetricItem singleItem = new MarkerResponse.SingleMarkerMetricItem();
-                        singleItem.setTitle(labels.getString("RESULT_DOWNLOAD"));
-                        final String downloadString = String.format("%s %s",
-                                FormatUtils.formatSpeed(fieldDown), labels.getString("RESULT_DOWNLOAD_UNIT"));
-                        singleItem.setValue(downloadString);
-                        singleItem.setClassification(
-                                Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
-
-
-                        markerResponse.getMeasurement().add(singleItem);
-
-
-                        final int fieldUp = rs.getSpeedUpload();
-                        singleItem = new MarkerResponse.SingleMarkerMetricItem();
-                        singleItem.setTitle(labels.getString("RESULT_UPLOAD"));
-                        final String uploadString = String.format("%s %s",
-                                FormatUtils.formatSpeed(fieldUp),
-                                labels.getString("RESULT_UPLOAD_UNIT"));
-                        singleItem.setValue(uploadString);
-                        singleItem.setClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
-
-                        markerResponse.getMeasurement().add(singleItem);
-
                         MarkerResponse.SingleMarkerMeasurementResult measurementResult = new MarkerResponse.SingleMarkerMeasurementResult();
-                        {
-                            measurementResult.setDownloadKbps(fieldDown);
-                            measurementResult.setDownloadClassification(Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
-                            measurementResult.setUploadKbps(fieldUp);
-                            measurementResult.setUploadClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
+                        MarkerResponse.SingleMarkerMetricItem singleItem;
+                        if (rs.getSpeedDownload() != null && rs.getSpeedUpload() != null) {
+                            final int fieldDown = rs.getSpeedDownload().intValue();
+                            singleItem = new MarkerResponse.SingleMarkerMetricItem();
+                            singleItem.setTitle(labels.getString("RESULT_DOWNLOAD"));
+                            final String downloadString = String.format("%s %s",
+                                    FormatUtils.formatSpeed(fieldDown), labels.getString("RESULT_DOWNLOAD_UNIT"));
+                            singleItem.setValue(downloadString);
+                            singleItem.setClassification(
+                                    Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
+
+
+                            markerResponse.getMeasurement().add(singleItem);
+
+                            final int fieldUp = rs.getSpeedUpload();
+                            singleItem = new MarkerResponse.SingleMarkerMetricItem();
+                            singleItem.setTitle(labels.getString("RESULT_UPLOAD"));
+                            final String uploadString = String.format("%s %s",
+                                    FormatUtils.formatSpeed(fieldUp),
+                                    labels.getString("RESULT_UPLOAD_UNIT"));
+                            singleItem.setValue(uploadString);
+                            singleItem.setClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
+
+                            markerResponse.getMeasurement().add(singleItem);
+
+                            {
+                                measurementResult.setDownloadKbps(fieldDown);
+                                measurementResult.setDownloadClassification(Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
+                                measurementResult.setUploadKbps(fieldUp);
+                                measurementResult.setUploadClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
+                            }
                         }
 
-                        final long fieldPing = rs.getPingMedian();
-                        singleItem = new MarkerResponse.SingleMarkerMetricItem();
-                        singleItem.setTitle(labels.getString("RESULT_PING"));
-                        final String pingString = String.format("%s %s", FormatUtils.formatPing(rs.getPingMedian()),
-                                labels.getString("RESULT_PING_UNIT"));
-                        singleItem.setValue(pingString);
-                        singleItem.setClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
 
-                        markerResponse.getMeasurement().add(singleItem);
-                        measurementResult.setPingMs(fieldPing / 1000000d);
-                        measurementResult.setPingClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
+                        if ((rs.getPingMedian() != null)) {
+                            final long fieldPing = rs.getPingMedian();
+                            singleItem = new MarkerResponse.SingleMarkerMetricItem();
+                            singleItem.setTitle(labels.getString("RESULT_PING"));
+                            final String pingString = String.format("%s %s", FormatUtils.formatPing(rs.getPingMedian()),
+                                    labels.getString("RESULT_PING_UNIT"));
+                            singleItem.setValue(pingString);
+                            singleItem.setClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
+
+                            markerResponse.getMeasurement().add(singleItem);
+                            measurementResult.setPingMs(fieldPing / 1000000d);
+                            measurementResult.setPingClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
+                        }
 
                         final Integer networkType = rs.getNetworkType();
 
@@ -456,7 +461,7 @@ public class MarkerService {
                             //network
                             if (!StringUtils.isBlank(rs.getNetworkOperator())) {
                                 final String mobileNetworkString;
-                                if (rs.getRoamingType() != 2) { //not international roaming - display name of home network
+                                if (rs.getRoamingType() != null && rs.getRoamingType() != 2) { //not international roaming - display name of home network
                                     if (StringUtils.isBlank(rs.getMobileSimName())) {
                                         mobileNetworkString = rs.getNetworkOperator();
                                     } else {
