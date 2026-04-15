@@ -217,7 +217,12 @@ public abstract class TileGenerationService {
             throw new IllegalArgumentException();
         }
 
-        final List<MapServerOptions.SQLFilter> filters = new ArrayList<>(MapServerOptions.getDefaultMapFilters());
+        final List<MapServerOptions.SQLFilter> filters;
+        if (mo.isFences) {
+            filters = new ArrayList<>(MapServerOptions.getGetDefaultFencesFilter());
+        } else {
+            filters = new ArrayList<>(MapServerOptions.getDefaultMapFilters());
+        }
         for (final Map.Entry<String, String> entry : p.getFilterMap().entrySet())
         {
             final MapServerOptions.MapFilter mapFilter = MapServerOptions.getMapFilterMap().get(entry.getKey());

@@ -20,10 +20,8 @@ import lombok.Getter;
 import jakarta.persistence.Query;
 import org.springframework.util.StringUtils;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 final public class MapServerOptions
 {
@@ -387,6 +385,17 @@ final public class MapServerOptions
                             Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
                             "heatmap",
                             false));
+            put("mobile/fences", new MapOption("f.signal",
+                    "f.signal",
+                    "f.signal is not null",
+                    colors_rgb,
+                    signal_mobile,
+                    captions_mobile,
+                    Classification.THRESHOLD_SIGNAL_MOBILE,
+                    Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
+                    "heatmap",
+                    false,
+                    true));
 
             put("wifi/download", new MapOption("speed_download",
                     "speed_download_log",
@@ -515,6 +524,14 @@ final public class MapServerOptions
             add(new SQLFilter("t.deleted = false AND t.implausible = false AND t.status = 'FINISHED'"));
         }
     });
+
+    @Getter
+    protected static final List<SQLFilter> getDefaultFencesFilter = Collections.unmodifiableList(new ArrayList<SQLFilter>()
+    {
+        {
+            add(new SQLFilter("t.deleted = false AND t.implausible = false AND t.status = 'COVERAGE'"));
+        }
+    });
     
     @Getter
     protected static final SQLFilter accuracyMapFilter = new SQLFilter("t.geo_accuracy < 2000"); // 2km
@@ -563,6 +580,12 @@ final public class MapServerOptions
             ,
             "technology", new MapFilter()
             {
+                @Override
+                public SQLFilter getFilter(final String input, boolean isFences) {
+                    //for fences, there is no filtering at the moment
+                    return null;
+                }
+
             	@Override
             	public SQLFilter getFilter(final String input)
             	{ // do not filter if empty
@@ -689,16 +712,25 @@ final public class MapServerOptions
     public static class MapOption
     {
         public MapOption(final String valueColumn, final String sqlFilter, final int[] colors,
-                final double[] intervals, final String[] captions, final int[] classification,
-                final String[] classificationCaptions, final String overlayType, final boolean reverseScale)
+                         final double[] intervals, final String[] captions, final int[] classification,
+                         final String[] classificationCaptions, final String overlayType, final boolean reverseScale)
         {
             this(valueColumn, valueColumn, sqlFilter, colors, intervals, captions, classification,
-                    classificationCaptions, overlayType, reverseScale);
+                    classificationCaptions, overlayType, reverseScale, false);
         }
-        
+
+        public MapOption(final String valueColumn, final String valueColumnLog, final String sqlFilter,
+                         final int[] colors, final double[] intervals, final String[] captions, final int[] classification,
+                         final String[] classificationCaptions, final String overlayType, final boolean reverseScale)
+        {
+            this(valueColumn, valueColumn, sqlFilter, colors, intervals, captions, classification,
+                    classificationCaptions, overlayType, reverseScale, false);
+        }
+
         public MapOption(final String valueColumn, final String valueColumnLog, final String sqlFilter,
                 final int[] colors, final double[] intervals, final String[] captions, final int[] classification,
-                final String[] classificationCaptions, final String overlayType, final boolean reverseScale)
+                final String[] classificationCaptions, final String overlayType, final boolean reverseScale,
+                         final boolean isFences)
         {
             super();
             this.valueColumn = valueColumn;
@@ -710,6 +742,7 @@ final public class MapServerOptions
             this.classificationCaptions = classificationCaptions;
             this.overlayType = overlayType;
             this.reverseScale = reverseScale;
+            this.isFences = isFences;
             
             
             if (intervals.length != colors.length || intervals.length != captions.length)
@@ -750,6 +783,7 @@ final public class MapServerOptions
         public final String[] classificationCaptions;
         public final String overlayType;
         public final boolean reverseScale;
+        public final boolean isFences;
         
         public int getClassification(final long value)
         {
@@ -760,6 +794,9 @@ final public class MapServerOptions
     public static abstract class MapFilter
     {
         public abstract SQLFilter getFilter(String input);
+        public SQLFilter getFilter(String input, boolean isFences) {
+            return getFilter(input);
+        };
     }
     
     public static class StaticMapFilter extends MapFilter
@@ -771,6 +808,11 @@ final public class MapServerOptions
         }
         @Override
         public SQLFilter getFilter(String input)
+        {
+            return filter;
+        }
+        @Override
+        public SQLFilter getFilter(String input, boolean isFences)
         {
             return filter;
         }

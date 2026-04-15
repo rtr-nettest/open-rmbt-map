@@ -57,21 +57,36 @@ public class PointTileService extends TileGenerationService {
             baseTile = null;
         }
 
-
-        filters.add(MapServerOptions.getAccuracyMapFilter());
+        if (!mo.isFences) {
+            filters.add(MapServerOptions.getAccuracyMapFilter());
+        }
 
         final StringBuilder whereSQL = new StringBuilder(mo.sqlFilter);
-        for (final MapServerOptions.SQLFilter sf : filters)
+        for (final MapServerOptions.SQLFilter sf : filters) {
             whereSQL.append(" AND ").append(sf.getWhere());
+        }
 
-        final String sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, %s val"
-                + " FROM test t"
-                + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
-                + " WHERE "
-                + " %s"
-                + " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)"
-                + " ORDER BY"
-                + " t.uid", mo.valueColumn, whereSQL);
+        final String sql;
+        if (mo.isFences) {
+            sql = String.format("SELECT ST_X(ST_Transform(f.geom4326, 900913)) gx, ST_Y(ST_Transform(f.geom4326, 900913)) gy, NULL count, %s val"
+                    + " FROM fences f"
+                    + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
+                    + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
+                    + " WHERE "
+                    + " %s"
+                    + " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913), 4326)"
+                    + " ORDER BY"
+                    + " f.uid", mo.valueColumn, whereSQL);
+        } else {
+            sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, %s val"
+                    + " FROM test t"
+                    + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
+                    + " WHERE "
+                    + " %s"
+                    + " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)"
+                    + " ORDER BY"
+                    + " t.uid", mo.valueColumn, whereSQL);
+        }
 
         final double diameter = params.getPointDiameter();
         final double radius = diameter / 2d;
