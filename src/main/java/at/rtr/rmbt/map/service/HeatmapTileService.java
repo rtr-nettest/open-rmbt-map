@@ -98,7 +98,9 @@ public class HeatmapTileService extends TileGenerationService {
 
     @Override
     protected byte[] generateTile(TileParameters params, int tileSizeIdx, int zoom, DBox box, MapServerOptions.MapOption mo, List<MapServerOptions.SQLFilter> filters, float quantile) {
-        filters.add(MapServerOptions.getAccuracyMapFilter());
+        if (!mo.isFences) {
+            filters.add(MapServerOptions.getAccuracyMapFilter());
+        }
 
         final int tileSize = TILE_SIZES[tileSizeIdx];
 
@@ -108,15 +110,29 @@ public class HeatmapTileService extends TileGenerationService {
         for (final MapServerOptions.SQLFilter sf : filters)
             whereSQL.append(" AND ").append(sf.getWhere());
 
-        final String sql = String.format("SELECT count(%1$s) count,"
-                + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
-                + " ST_X(ST_SnapToGrid(location, ?,?,?,?)) gx,"
-                + " ST_Y(ST_SnapToGrid(location, ?,?,?,?)) gy"
-                + " FROM test t"
-                + " WHERE "
-                + " %2$s"
-                + " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)"
-                + " GROUP BY gx,gy", mo.valueColumnLog, whereSQL);
+        final String sql;
+        if (mo.isFences) {
+            sql = String.format("SELECT count(%1$s) count,"
+                    + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
+                    + " ST_X(ST_SnapToGrid(ST_Transform(f.geom4326, 900913), ?,?,?,?)) gx,"
+                    + " ST_Y(ST_SnapToGrid(ST_Transform(f.geom4326, 900913), ?,?,?,?)) gy"
+                    + " FROM fences f"
+                    + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
+                    + " WHERE "
+                    + " %2$s"
+                    + " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913), 4326)"
+                    + " GROUP BY gx,gy", mo.valueColumnLog, whereSQL);
+        } else {
+            sql = String.format("SELECT count(%1$s) count,"
+                    + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
+                    + " ST_X(ST_SnapToGrid(location, ?,?,?,?)) gx,"
+                    + " ST_Y(ST_SnapToGrid(location, ?,?,?,?)) gy"
+                    + " FROM test t"
+                    + " WHERE "
+                    + " %2$s"
+                    + " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)"
+                    + " GROUP BY gx,gy", mo.valueColumnLog, whereSQL);
+        }
 
         final int partSizeFactor;
         if (zoom >= ZOOM_TO_PART_FACTOR.length)
