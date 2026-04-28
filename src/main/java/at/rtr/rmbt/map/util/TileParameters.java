@@ -134,7 +134,7 @@ public class TileParameters implements Serializable {
             _filterMap.put("provider", params.getProvider());
         }
         if (params.getTechnology() != null) {
-            _filterMap.put("technology", params.getProvider());
+            _filterMap.put("technology", params.getTechnology());
         }
         if (params.getPeriod() != null) {
             _filterMap.put("period", params.getPeriod().toString());

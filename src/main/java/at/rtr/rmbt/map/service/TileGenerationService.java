@@ -155,13 +155,18 @@ public abstract class TileGenerationService {
                         @Override
                         public void run()
                         {
-                            log.debug("adding in background: " + cacheKey);
-                            final int tileSizeIdx = getTileSizeIdx(p);
-                            byte[] data = generateTile(p, tileSizeIdx);
-                            CachedTile ct = new CachedTile();
-                            ct.setCreationTime(Instant.now());
-                            ct.setTileContent(data);
-                            cache.put(cacheKey, ct);
+                            try {
+                                log.debug("adding in background: " + cacheKey);
+                                final int tileSizeIdx = getTileSizeIdx(p);
+                                byte[] data = generateTile(p, tileSizeIdx);
+                                CachedTile ct = new CachedTile();
+                                ct.setCreationTime(Instant.now());
+                                ct.setTileContent(data != null ? data : EMPTY_MARKER);
+                                cache.put(cacheKey, ct);
+                            } catch (Exception e) {
+                                log.error("background refresh failed for: " + cacheKey + "; evicting stale entry", e);
+                                cache.evict(cacheKey);
+                            }
                         }
                     };
                     try {
