@@ -424,7 +424,8 @@ public class MarkerService {
                         networkInfo.setNetworkTypeLabel(HelperFunctions.getNetworkTypeName(networkType));
 
 
-                        if (networkType == 98 || networkType == 99) // mobile wifi or browser
+                        if (networkType != null &&
+                                (networkType == 98 || networkType == 99)) // mobile wifi or browser
                         {
                             String providerText = "Unknown";
                             if (!StringUtils.isBlank(rs.getProviderName()))
