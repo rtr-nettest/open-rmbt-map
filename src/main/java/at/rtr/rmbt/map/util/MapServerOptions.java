@@ -16,6 +16,7 @@
  ******************************************************************************/
 package at.rtr.rmbt.map.util;
 
+import at.rtr.rmbt.map.constant.Constants;
 import lombok.Getter;
 import jakarta.persistence.Query;
 import org.springframework.util.StringUtils;
@@ -387,7 +388,7 @@ final public class MapServerOptions
                             false));
             put("mobile/fences", new MapOption("f.signal",
                     "f.signal",
-                    "f.signal is not null",
+                    "(f.avg_ping_ms is not null or technology_id = " + Constants.TECHNOLOGY_OFFLINE + ")",
                     colors_rgb,
                     signal_mobile,
                     captions_mobile,
@@ -399,7 +400,7 @@ final public class MapServerOptions
 
             put("mobile/fencesping", new MapOption("f.avg_ping_ms*1e6",
                     "(log(f.avg_ping_ms::double precision)) / 3",
-                    "f.avg_ping_ms is not null",
+                    "(f.avg_ping_ms is not null or technology_id = " + Constants.TECHNOLOGY_OFFLINE + ")",
                     colors_rgb,
                     values_ping,
                     captions_mobile,

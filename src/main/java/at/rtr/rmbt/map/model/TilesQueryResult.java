@@ -12,6 +12,16 @@ import java.sql.Timestamp;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@SqlResultSetMapping(name = "TilesQueryResultMappingWithTechnology",  classes = {
+        @ConstructorResult(targetClass = TilesQueryResult.class,
+                columns = {
+                        @ColumnResult(name = "count", type = Integer.class),
+                        @ColumnResult(name = "val", type = Double.class),
+                        @ColumnResult(name = "gx", type = Double.class),
+                        @ColumnResult(name = "gy", type = Double.class),
+                        @ColumnResult(name = "technology", type = Integer.class)
+                }
+        )})
 @SqlResultSetMapping(name = "TilesQueryResultMapping",  classes = {
         @ConstructorResult(targetClass = TilesQueryResult.class,
                 columns = {
@@ -27,6 +37,7 @@ public class TilesQueryResult {
     Double val;
     Double gx;
     Double gy;
+    Integer technology;
 
 
     @Id

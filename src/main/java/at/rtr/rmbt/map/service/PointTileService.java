@@ -1,5 +1,6 @@
 package at.rtr.rmbt.map.service;
 
+import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
 import at.rtr.rmbt.map.model.TilesQueryResult;
 import at.rtr.rmbt.map.util.MapServerOptions;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -68,7 +70,7 @@ public class PointTileService extends TileGenerationService {
 
         final String sql;
         if (mo.isFences) {
-            sql = String.format("SELECT ST_X(ST_Transform(f.geom4326, 3857)) gx, ST_Y(ST_Transform(f.geom4326, 3857)) gy, NULL count, %s val"
+            sql = String.format("SELECT ST_X(ST_Transform(f.geom4326, 3857)) gx, ST_Y(ST_Transform(f.geom4326, 3857)) gy, NULL count, %s val, technology_id technology"
                     + " FROM fences f"
                     + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
                     + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
@@ -78,7 +80,7 @@ public class PointTileService extends TileGenerationService {
                     + " ORDER BY"
                     + " f.uid", mo.valueColumn, whereSQL);
         } else {
-            sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, %s val"
+            sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, %s val, network_type technology"
                     + " FROM test t"
                     + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
                     + " WHERE "
@@ -103,12 +105,13 @@ public class PointTileService extends TileGenerationService {
         final Color colorYellow = new Color(255, 255, 0, transparency);
         final Color colorRed = new Color(255, 0, 0, transparency);
         final Color colorGray = new Color(128, 128, 128, transparency);
+        final Color colorOffline = new Color(128, 128, 128, transparency);
 
         final List<Dot> dots = new ArrayList<>();
 
         if (entityManager != null) {
             try {
-                Query ps = entityManager.createNativeQuery(sql, "TilesQueryResultMapping");
+                Query ps = entityManager.createNativeQuery(sql, "TilesQueryResultMappingWithTechnology");
 
                 int i = 1;
 
@@ -134,30 +137,36 @@ public class PointTileService extends TileGenerationService {
 
                     final double cx = rs.getGx();
                     final double cy = rs.getGy();
-                    final long value = rs.getVal().longValue();
 
                     final boolean highlight = highlightUUID != null;
-
-                    final int classification = noColor || noFill ? 0 : mo.getClassification(value);
-
                     final Color color;
-                    switch (classification) {
-                        case 4:
-                            color = colorUltraGreen;
-                            break;
-                        case 3:
-                            color = colorGreen;
-                            break;
-                        case 2:
-                            color = colorYellow;
-                            break;
-                        case 1:
-                            color = colorRed;
-                            break;
-                        default:
-                            color = colorGray;
-                            break;
+
+                    if (rs.getVal() == null || Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
+                        color = colorOffline;
+                    } else {
+                        final long value = rs.getVal().longValue();
+                        final int classification = noColor || noFill ? 0 : mo.getClassification(value);
+
+
+                        switch (classification) {
+                            case 4:
+                                color = colorUltraGreen;
+                                break;
+                            case 3:
+                                color = colorGreen;
+                                break;
+                            case 2:
+                                color = colorYellow;
+                                break;
+                            case 1:
+                                color = colorRed;
+                                break;
+                            default:
+                                color = colorGray;
+                                break;
+                        }
                     }
+
 
                     dots.add(new Dot(cx, cy, color, highlight));
                 }
