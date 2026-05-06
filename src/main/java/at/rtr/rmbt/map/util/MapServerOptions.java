@@ -735,7 +735,7 @@ final public class MapServerOptions
                          final int[] colors, final double[] intervals, final String[] captions, final int[] classification,
                          final String[] classificationCaptions, final String overlayType, final boolean reverseScale)
         {
-            this(valueColumn, valueColumn, sqlFilter, colors, intervals, captions, classification,
+            this(valueColumn, valueColumnLog, sqlFilter, colors, intervals, captions, classification,
                     classificationCaptions, overlayType, reverseScale, false);
         }
 
