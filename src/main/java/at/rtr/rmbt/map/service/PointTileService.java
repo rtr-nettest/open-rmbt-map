@@ -97,6 +97,7 @@ public class PointTileService extends TileGenerationService {
         final int transparency = (int) Math.round(params.getTransparency() * 255);
         final boolean noFill = params.isNoFill();
         final boolean noColor = params.isNoColor();
+        final int noFenceBorderBeforeZoom = 13;
 
         final Color borderColor = new Color(0, 0, 0, transparency);
         final Color highlightBorderColor = new Color(0, 0, 0, transparency);
@@ -141,8 +142,10 @@ public class PointTileService extends TileGenerationService {
                     final boolean highlight = highlightUUID != null;
                     final Color color;
 
-                    if (rs.getVal() == null || Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
+                    if (rs.getVal() == null && Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
                         color = colorOffline;
+                    } else if (rs.getVal() == null) {
+                        continue; //e.g. signal tests on iOS
                     } else {
                         final long value = rs.getVal().longValue();
                         final int classification = noColor || noFill ? 0 : mo.getClassification(value);
@@ -174,7 +177,14 @@ public class PointTileService extends TileGenerationService {
                 if (_emptyTile)
                     return baseTile;
 
-                final byte[] data = drawImage(baseTile, diameter, dots, tileSizeIdx, noFill, triangleHeight, triangleSide, box, highlightBorderColor, radius, borderColor);
+                final boolean drawBorder;
+                if (mo.isFences && zoom <= noFenceBorderBeforeZoom) {
+                    drawBorder = false;
+                } else {
+                    drawBorder = true;
+                }
+
+                final byte[] data = drawImage(baseTile, diameter, dots, tileSizeIdx, noFill, triangleHeight, triangleSide, box, highlightBorderColor, radius, borderColor, drawBorder);
                 return data;
             } catch (SQLException | IOException ex) {
                 throw new RuntimeException(ex);
@@ -187,7 +197,7 @@ public class PointTileService extends TileGenerationService {
     }
 
     private byte[] drawImage(byte[] baseTile, double diameter, List<Dot> dots, int tileSizeIdx, boolean noFill, double triangleHeight, double triangleSide, DBox box,
-                                          Color highlightBorderColor, double radius, Color borderColor) throws IOException {
+                                          Color highlightBorderColor, double radius, Color borderColor, boolean drawBorder) throws IOException {
         final Image img = generateImage(tileSizeIdx);
         final Graphics2D g = img.g;
 
@@ -231,7 +241,12 @@ public class PointTileService extends TileGenerationService {
                     g.setPaint(dot.color);
                     g.fill(shape);
                 }
-                g.setPaint(borderColor);
+                if (drawBorder) {
+                    g.setPaint(borderColor);
+                }
+                else {
+                    g.setPaint(dot.color);
+                }
                 g.draw(shape);
             }
         }
