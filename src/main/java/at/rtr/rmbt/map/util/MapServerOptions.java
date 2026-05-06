@@ -388,7 +388,7 @@ final public class MapServerOptions
                             false));
             put("mobile/fences", new MapOption("f.signal",
                     "f.signal",
-                    "(f.avg_ping_ms is not null or technology_id = " + Constants.TECHNOLOGY_OFFLINE + ")",
+                    "(f.signal is not null or technology_id = " + Constants.TECHNOLOGY_OFFLINE + ")",
                     colors_rgb,
                     signal_mobile,
                     captions_mobile,
