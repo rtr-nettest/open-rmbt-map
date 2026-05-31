@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.RejectedExecutionException;
 
 @Slf4j
 public abstract class TileGenerationService {
@@ -135,6 +136,11 @@ public abstract class TileGenerationService {
         {
 
             CachedTile cacheObject = cache.get(cacheKey, CachedTile.class);
+
+            boolean isNotRecent = cacheObject != null && Instant.now().minus(Constants.TILE_SHORT_CACHE_EXPIRE, ChronoUnit.SECONDS).isAfter(cacheObject.getCreationTime());
+            if (isNotRecent && p.getPeriod() <= 2) {
+                cacheObject = null;
+            }
             if (cacheObject != null)
             {
                 boolean isStale = Instant.now().minus(Constants.TILE_CACHE_STALE, ChronoUnit.SECONDS).isAfter(cacheObject.getCreationTime());
@@ -149,16 +155,25 @@ public abstract class TileGenerationService {
                         @Override
                         public void run()
                         {
-                            log.debug("adding in background: " + cacheKey);
-                            final int tileSizeIdx = getTileSizeIdx(p);
-                            byte[] data = generateTile(p, tileSizeIdx);
-                            CachedTile ct = new CachedTile();
-                            ct.setCreationTime(Instant.now());
-                            ct.setTileContent(data);
-                            cache.put(cacheKey, ct);
+                            try {
+                                log.debug("adding in background: " + cacheKey);
+                                final int tileSizeIdx = getTileSizeIdx(p);
+                                byte[] data = generateTile(p, tileSizeIdx);
+                                CachedTile ct = new CachedTile();
+                                ct.setCreationTime(Instant.now());
+                                ct.setTileContent(data != null ? data : EMPTY_MARKER);
+                                cache.put(cacheKey, ct);
+                            } catch (Exception e) {
+                                log.error("background refresh failed for: " + cacheKey + "; evicting stale entry", e);
+                                cache.evict(cacheKey);
+                            }
                         }
                     };
-                    executor.execute(refreshCacheRunnable);
+                    try {
+                        executor.execute(refreshCacheRunnable);
+                    } catch (RejectedExecutionException e) {
+                        log.error("could not add to background: " + cacheKey + "; " + e.getMessage());
+                    }
 
                 }
                 return data;

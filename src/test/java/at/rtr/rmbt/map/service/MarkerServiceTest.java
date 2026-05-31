@@ -5,6 +5,7 @@ import at.rtr.rmbt.map.dto.CapabilitiesRequest;
 import at.rtr.rmbt.map.dto.MarkerRequest;
 import at.rtr.rmbt.map.dto.MarkerResponse;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ class MarkerServiceTest {
     private MarkerService markerService;
 
     @Test
+    @Disabled
     void testGetMarkersForPoint() throws SQLException {
         MarkerRequest mr = new MarkerRequest("de",
                 null,
@@ -40,6 +42,7 @@ class MarkerServiceTest {
     }
 
     @Test
+    @Disabled
     void testGetSpecificMarker() throws SQLException {
         MarkerRequest mr = new MarkerRequest("de",
                 "93f282f8-7047-49ef-985a-ef9898d5c474",

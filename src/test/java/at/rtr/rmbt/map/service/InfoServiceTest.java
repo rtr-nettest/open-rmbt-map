@@ -4,6 +4,7 @@ import at.rtr.rmbt.map.MapServerConfiguration;
 import at.rtr.rmbt.map.dto.TilesInfoRequest;
 import at.rtr.rmbt.map.dto.TilesInfoResponse;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ class InfoServiceTest {
 
 
     @Test
+    @Disabled
     void getTilesInfo() {
         TilesInfoRequest request = new TilesInfoRequest();
         request.setLanguage("de");

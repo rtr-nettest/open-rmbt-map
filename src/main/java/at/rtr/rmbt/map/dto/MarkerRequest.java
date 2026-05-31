@@ -1,5 +1,6 @@
 package at.rtr.rmbt.map.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -27,7 +28,7 @@ public class MarkerRequest {
     @JsonProperty("filter")
     MarkerRequestFilter filter;
 
-    @JsonProperty("capabilities")
+    @JsonProperty(value = "capabilities", required = false)
     private final CapabilitiesRequest capabilities;
 
     @Setter
@@ -47,6 +48,7 @@ public class MarkerRequest {
         Double latitude;
 
         @JsonProperty("long")
+        @JsonAlias("lon")
         Double longitude;
 
         @JsonProperty

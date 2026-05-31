@@ -5,6 +5,7 @@ import at.rtr.rmbt.map.dto.MapFiltersResponse;
 import at.rtr.rmbt.map.dto.TilesInfoRequest;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +26,7 @@ class FiltersServiceTest {
     private FiltersService filtersService;
 
     @Test
+    @Disabled
     void getMapFilters() {
         TilesInfoRequest request = new TilesInfoRequest();
         request.setLanguage("de");

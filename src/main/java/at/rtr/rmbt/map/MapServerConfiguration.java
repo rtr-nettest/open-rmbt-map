@@ -1,11 +1,13 @@
 package at.rtr.rmbt.map;
 
 
+import at.rtr.rmbt.map.filter.ApiLoggingFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -45,12 +47,20 @@ public class MapServerConfiguration extends SpringBootServletInitializer {
     public TaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);  // Minimum number of threads in the pool
-        executor.setMaxPoolSize(10);  // Maximum number of threads in the pool
-        executor.setQueueCapacity(25);  // Queue capacity for pending tasks
+        executor.setMaxPoolSize(32);  // Maximum number of threads in the pool
+        executor.setQueueCapacity(executor.getMaxPoolSize() * 10);  // Queue capacity for pending tasks
         executor.setThreadNamePrefix("AsyncExecutor-");  // Prefix for thread names
         executor.setWaitForTasksToCompleteOnShutdown(true);  // Ensures tasks complete on shutdown
         executor.setAwaitTerminationSeconds(60);  // Timeout for waiting for tasks to complete
         executor.initialize();  // Initializes the thread pool
         return executor;
+    }
+
+    @Bean
+    public FilterRegistrationBean<ApiLoggingFilter> loggingFilter() {
+        FilterRegistrationBean<ApiLoggingFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new ApiLoggingFilter("reqId"));
+        registrationBean.addUrlPatterns("*");
+        return registrationBean;
     }
 }
