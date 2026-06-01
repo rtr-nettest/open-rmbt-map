@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 
+import java.awt.*;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -229,5 +230,57 @@ public class HelperFunctions {
         final int g = (int) (c0g + ((c1 >> 8 & 0xff) - c0g) * factor);
         final int b = (int) (c0b + ((c1 & 0xff) - c0b) * factor);
         return r << 16 | g << 8 | b;
+    }
+
+    public static Color technologyAndSignalStrengthToColor(Integer networkType, Integer signalStrength, Integer minSignal, Integer maxSignal) {
+        if (minSignal == null) {
+            minSignal = -125;
+        }
+        if (maxSignal == null) {
+            maxSignal = -85;
+        }
+
+        String networkTypeName = getNetworkTypeName(networkType);
+        Color baseColor;
+        //TODO: Calculate once, static vars
+        if (networkTypeName.contains("2G")) {
+            baseColor = Color.decode("#FFDE00");
+        }
+        else if (networkTypeName.contains("3G")) {
+            baseColor = Color.decode("#EFFF00");
+        } else if (networkTypeName.contains("4G")) {
+            baseColor = Color.decode("#00DEFF");
+        }
+        else if (networkTypeName.contains("5G SA")) {
+            baseColor = Color.decode("#5E00FF");
+        }
+        else if (networkTypeName.contains("5G")) {
+            baseColor = Color.decode("#0091FF");
+        } else {
+            baseColor = Color.decode("#FFFFFF");
+        }
+
+        if (signalStrength == null) {
+            signalStrength = minSignal;
+        }
+
+        int clampedSignal = Math.max(minSignal, Math.min(maxSignal, signalStrength));
+        double factor = (double) (clampedSignal - minSignal) / (maxSignal - minSignal);
+
+        float[] hsb = Color.RGBtoHSB(
+                baseColor.getRed(),
+                baseColor.getGreen(),
+                baseColor.getBlue(),
+                null
+        );
+
+        //min color is same color but with reduced saturation and brightness
+        Color minColor = Color.getHSBColor(hsb[0], 0.18f, 0.67f);
+
+        int red = (int) (minColor.getRed() + factor * (baseColor.getRed() - minColor.getRed()));
+        int green = (int) (minColor.getGreen() + factor * (baseColor.getGreen() - minColor.getGreen()));
+        int blue = (int) (minColor.getBlue() + factor * (baseColor.getBlue() - minColor.getBlue()));
+
+        return new Color(red, green, blue);
     }
 }

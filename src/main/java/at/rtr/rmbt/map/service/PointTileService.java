@@ -3,6 +3,7 @@ package at.rtr.rmbt.map.service;
 import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
 import at.rtr.rmbt.map.model.TilesQueryResult;
+import at.rtr.rmbt.map.util.HelperFunctions;
 import at.rtr.rmbt.map.util.MapServerOptions;
 import at.rtr.rmbt.map.util.TileParameters;
 import jakarta.persistence.EntityManager;
@@ -144,7 +145,11 @@ public class PointTileService extends TileGenerationService {
 
                     if (rs.getVal() == null && Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
                         color = colorOffline;
-                    } else if (rs.getVal() == null) {
+                    } else if (mo.isFences() && (rs.getVal() == null || rs.getVal() < 0)) {
+                        Integer intValue = (rs.getVal() == null) ? null : rs.getVal().intValue();
+                        color = HelperFunctions.technologyAndSignalStrengthToColor(rs.getTechnology(), intValue, null, null);
+                    }
+                    else if (rs.getVal() == null) {
                         continue; //e.g. signal tests on iOS
                     } else {
                         final long value = rs.getVal().longValue();
