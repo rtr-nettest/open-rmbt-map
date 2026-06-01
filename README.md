@@ -56,3 +56,17 @@ Put the following into `logback-map.xml`:
 </configuration>
 ```
 Replace the values according to your setup, e.g. if the database is on the same machine, host will be 127.0.0.1.
+
+## Logging
+
+Logging is configured via `logback.xml` and is independent of the Spring profile.
+
+| Server     | app_name          |
+|------------|-------------------|
+| map        | map-service       |
+
+Behavior:
+
+- **No `LOG_HOST`** → console only, at `INFO`.
+- **`LOG_HOST` set** → Logstash at `INFO` + console at `ERROR` only (with `host` from `${LOGGING_HOST:-}`).
+- **Advanced** → admin points `logging.config` / `LOGGING_CONFIG_FILE*` at their own `logback.xml`.
