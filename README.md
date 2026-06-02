@@ -14,7 +14,7 @@ Add the following variables to `context.xml`:
 <Context>
  <!-- Map: database connection -->
  <Parameter name="MAP_DB_USER" value="rmbt" override="false"/>
- <Parameter name="MAP_DB_PASSWORD" value="putyourpasswordhere" override="false"/>
+ <Parameter name="MAP_DB_PASSWORD" value="<change-me>" override="false"/>
  <Parameter name="MAP_DB_HOST" value="db.example.com" override="false"/>
  <Parameter name="MAP_DB_PORT" value="5432" override="false"/>
  <Parameter name="MAP_DB_NAME" value="rmbt" override="false"/>
@@ -23,50 +23,53 @@ Add the following variables to `context.xml`:
  <Parameter name="MAP_REDIS_HOST" value="localhost" override="false"/>
  <Parameter name="MAP_REDIS_PORT" value="6379" override="false"/>
 
- <!-- Statistic - logback configuration -->
- <Parameter name="LOGGING_CONFIG_FILE_MAP" value="/etc/tomcat9/logback-map.xml" override="false"/>
 </Context>
 ```
 
-Put the following into `logback-map.xml`:
+##### Configure Logging - Console or Logstash
+
+The default configuration is to send log to `console`. In current Debian installations systemd
+redirects console output to systemd's journal.
+Older systems logged to `/var/log/tomcat10/catalina.out`.
+
+The following `context.xml` configuration sends log to Logstash at `elk.example.com`:
+
+```xml
+<!-- Logging  -->
+<Parameter name="LOG_HOST"     value="elk.example.com"       override="false"/>
+<Parameter name="LOG_PORT"     value="5000"                  override="false"/>
+<Parameter name="LOGGING_HOST" value="dev"                   override="false"/>
+```
+
+Alternatively, one might want to define a custom logging configuration.
+First, the alternative configuration file need to be specified in `context.xml`:
+```xml
+ <Parameter name="LOGGING_CONFIG_FILE_STATISTIC" value="/etc/tomcat10/logback.xml" override="false"/>
+```
+Again, make sure that the file `/etc/tomcat10/logback.xml` is owned by `tomcat`.
+
+This example logs to both Logstash and console:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE configuration>
+<configuration>
 
-<configuration scan="true">
-
-     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-
- <!-- with console log: include resource="org/springframework/boot/logging/logback/base.xml"/  -->
-
-    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <param name="Encoding" value="UTF-8"/>
-<!-- define remote logging  host here -->
-        <remoteHost>elk-host.example.com</remoteHost>
-        <port>5000</port>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-<!-- add custom fields to identify server and host -->
-            <customFields>{"app_name":"map-service", "host":"my-map-server"}</customFields>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p [%t] %-40.40logger{39} : %m%n</pattern>
         </encoder>
     </appender>
-<!-- log levels: TRACE, DEBUG, INFO, WARN, ERROR -->
+
+    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>elk.example.com:5000</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app_name":"map-service","host":"dev"}</customFields>
+        </encoder>
+    </appender>
+
     <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="logstash"/>
     </root>
+
 </configuration>
 ```
-Replace the values according to your setup, e.g. if the database is on the same machine, host will be 127.0.0.1.
-
-## Logging
-
-Logging is configured via `logback.xml` and is independent of the Spring profile.
-
-| Server     | app_name          |
-|------------|-------------------|
-| map        | map-service       |
-
-Behavior:
-
-- **No `LOG_HOST`** → console only, at `INFO`.
-- **`LOG_HOST` set** → Logstash at `INFO` + console at `ERROR` only (with `host` from `${LOGGING_HOST:-}`).
-- **Advanced** → admin points `logging.config` / `LOGGING_CONFIG_FILE*` at their own `logback.xml`.
