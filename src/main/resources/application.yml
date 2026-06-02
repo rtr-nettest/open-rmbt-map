@@ -23,7 +23,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   jackson:
     deserialization:
@@ -37,6 +36,11 @@ java:
       encoding:UTF-8
 application-version:
   host: rtr-api-dev
+# SQL logging goes through logback (so it honors the console ERROR filter / ships to Logstash),
+# not Hibernate's show_sql (which would println straight to the console). Raise/lower as needed.
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
 
 ---
 spring:
