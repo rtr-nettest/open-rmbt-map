@@ -10,7 +10,7 @@
 
 **RMBT** ("RTR Multithreaded Broadband Test") is the engine behind **RTR-Netztest**, the public
 internet-quality measurement service of RTR-GmbH. Every measurement an end user runs is stored by
-the **Control Server** as a `test` row with a geographic location.
+the **Control Srepeerver** as a `test` row with a geographic location.
 
 The **Map Server** is the backend for the **interactive map** on netztest.at. It turns millions of
 geolocated measurements into the visual layers you see on a slippy map:
