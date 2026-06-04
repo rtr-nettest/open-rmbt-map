@@ -47,17 +47,50 @@ public class ApiLoggingFilter implements Filter {
             try {
                 chain.doFilter(bufferedRequest, bufferedResponse);
             } catch (Throwable a) {
-                LOGGER.error(a.getMessage(), a);
+                if (isClientAbort(a)) {
+                    LOGGER.info("User disconnected before the response was completed: {} {}",
+                            httpServletRequest.getMethod(), httpServletRequest.getServletPath());
+                } else {
+                    LOGGER.error(a.getMessage(), a);
+                }
             } finally {
-                final StringBuilder logResponse = new StringBuilder("HTTP RESPONSE ")
-                        .append(bufferedResponse.getContent());
-                String responseString = logResponse.toString();
-                LOGGER.info(responseString.substring(0, Math.min(responseString.length(), 10000)));
+                // Only log textual response bodies; binary payloads (e.g. PNG map tiles) would
+                // otherwise dump raw bytes into the log.
+                final String contentType = httpServletResponse.getContentType();
+                if (isTextualContentType(contentType)) {
+                    final String content = bufferedResponse.getContent();
+                    LOGGER.info("HTTP RESPONSE " + content.substring(0, Math.min(content.length(), 10000)));
+                } else {
+                    LOGGER.info("HTTP RESPONSE [" + contentType + " body not logged]");
+                }
                 MDC.clear();
             }
         } catch (Throwable a) {
             LOGGER.error(a.getMessage(), a);
         }
+    }
+
+    /** True if the exception (or any cause) is a client-side disconnect (broken pipe / reset). */
+    private static boolean isClientAbort(Throwable t) {
+        for (Throwable c = t; c != null; c = c.getCause()) {
+            if ("ClientAbortException".equals(c.getClass().getSimpleName())) {
+                return true;
+            }
+            final String m = c.getMessage();
+            if (c instanceof java.io.IOException && m != null
+                    && (m.contains("Broken pipe") || m.contains("Connection reset"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isTextualContentType(String contentType) {
+        if (contentType == null) {
+            return true;
+        }
+        final String ct = contentType.toLowerCase();
+        return ct.startsWith("text/") || ct.contains("json") || ct.contains("xml");
     }
 
     private Map<String, String> getTypesafeRequestMap(HttpServletRequest request) {
