@@ -204,8 +204,8 @@ public class MarkerService {
                                     + (useLatLon ? " ST_Y(f.geom4326) lat, ST_X(f.geom4326) lon, NULL x, NULL y"
                                     : " NULL lat, NULL lon, ST_X(ST_Transform(f.geom4326, 3857)) x, ST_Y(ST_Transform(f.geom4326, 3857)) y")
                                     + ", t.time, t.timezone, "
-                                    + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", t.ping_median \"pingMedian\", t.network_type \"networkType\","
-                                    + " t.signal_strength \"signalStrength\", t.lte_rsrp \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
+                                    + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", (f.avg_ping_ms *1e6)::bigint AS \"pingMedian\", f.technology_id \"networkType\","
+                                    + " t.signal_strength \"signalStrength\", f.signal::int \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
                                     + " t.network_operator_name \"networkOperatorName\", t.network_operator \"networkOperator\","
                                     + " t.network_sim_operator \"networkSimOperator\", t.roaming_type \"roamingType\", t.public_ip_as_name, "
                                     + " mprov.shortname \"mobileProviderName\","
