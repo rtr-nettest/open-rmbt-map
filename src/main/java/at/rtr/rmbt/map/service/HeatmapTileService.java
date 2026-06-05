@@ -120,7 +120,8 @@ public class HeatmapTileService extends TileGenerationService {
         final String sql;
         if (mo.isFences) {
             // most-common technology per grid cell (mode); aggregated alongside the value/count
-            sql = String.format("SELECT count(%1$s) count,"
+            // count over technology_id (not signal) so offline cells (signal == null) are still counted
+            sql = String.format("SELECT count(f.technology_id) count,"
                     + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
                     + " ST_X(ST_SnapToGrid(ST_Transform(f.geom4326, 3857), ?,?,?,?)) gx,"
                     + " ST_Y(ST_SnapToGrid(ST_Transform(f.geom4326, 3857), ?,?,?,?)) gy,"
