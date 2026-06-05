@@ -398,18 +398,6 @@ final public class MapServerOptions
                     false,
                     true));
 
-            put("mobile/fencesping", new MapOption("f.avg_ping_ms*1e6",
-                    "(log(f.avg_ping_ms::double precision)) / 3",
-                    "(f.avg_ping_ms is not null or technology_id = " + Constants.TECHNOLOGY_OFFLINE + ")",
-                    colors_rgb,
-                    values_ping,
-                    captions_mobile,
-                    Classification.THRESHOLD_PING,
-                    Classification.THRESHOLD_PING_CAPTIONS,
-                    "heatmap",
-                    false,
-                    true));
-
             put("wifi/download", new MapOption("speed_download",
                     "speed_download_log",
                     "speed_download is not null AND network_type = 99",
