@@ -1,7 +1,9 @@
 package at.rtr.rmbt.map.service;
 
+import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
 import at.rtr.rmbt.map.model.TilesQueryResult;
+import at.rtr.rmbt.map.util.HelperFunctions;
 import at.rtr.rmbt.map.util.MapServerOptions;
 import at.rtr.rmbt.map.util.TileParameters;
 import jakarta.annotation.PostConstruct;
@@ -11,11 +13,13 @@ import jakarta.persistence.Query;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static at.rtr.rmbt.map.util.HelperFunctions.valueToColor;
 
@@ -52,6 +56,9 @@ public class HeatmapTileService extends TileGenerationService {
 
     private final static double ALPHA_TOP = 0.5;
     private final static int ALPHA_MAX = 1;
+
+    // offline fences color (gray), matches PointTileService's offline color
+    private final static int COLOR_OFFLINE_RGB = 0x808080;
 
     private final static boolean DEBUG_LINES = false;
 
@@ -112,10 +119,12 @@ public class HeatmapTileService extends TileGenerationService {
 
         final String sql;
         if (mo.isFences) {
+            // most-common technology per grid cell (mode); aggregated alongside the value/count
             sql = String.format("SELECT count(%1$s) count,"
                     + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
                     + " ST_X(ST_SnapToGrid(ST_Transform(f.geom4326, 3857), ?,?,?,?)) gx,"
-                    + " ST_Y(ST_SnapToGrid(ST_Transform(f.geom4326, 3857), ?,?,?,?)) gy"
+                    + " ST_Y(ST_SnapToGrid(ST_Transform(f.geom4326, 3857), ?,?,?,?)) gy,"
+                    + " MODE() WITHIN GROUP (ORDER BY f.technology_id) technology"
                     + " FROM fences f"
                     + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
                     + " WHERE "
@@ -147,6 +156,7 @@ public class HeatmapTileService extends TileGenerationService {
         final double[] values = new double[fetchPartsX * fetchPartsY];
         // final int[] countsReal = new int[fetchPartsX * fetchPartsY];
         final int[] countsRel = new int[fetchPartsX * fetchPartsY];
+        final Integer[] technologies = new Integer[fetchPartsX * fetchPartsY];
 
         Arrays.fill(values, Double.NaN);
 
@@ -156,7 +166,11 @@ public class HeatmapTileService extends TileGenerationService {
         {
             try
             {
-                Query ps = entityManager.createNativeQuery(sql, "TilesQueryResultMapping");
+                // fences need the technology column -> use the technology-aware result mapping
+                final String resultMapping = mo.isFences
+                        ? "TilesQueryResultMappingWithTechnology"
+                        : "TilesQueryResultMapping";
+                Query ps = entityManager.createNativeQuery(sql, resultMapping);
                 int p = 1;
                 ps.setParameter(p++, quantile);
 
@@ -191,8 +205,16 @@ public class HeatmapTileService extends TileGenerationService {
                     final Double val = rs.getVal();
                     final Double gx = rs.getGx();
                     final Double gy = rs.getGy();
+                    final Integer technology = rs.getTechnology();
 
-                    if (val == null || count == null || count.equals(0)) {
+                    // offline fences cells have no signal value but must still be rendered
+                    final boolean offline = mo.isFences
+                            && Objects.equals(technology, Constants.TECHNOLOGY_OFFLINE);
+
+                    if (gx == null || gy == null) {
+                        continue;
+                    }
+                    if (!offline && (val == null || count == null || count.equals(0))) {
                         continue;
                     }
 
@@ -206,11 +228,15 @@ public class HeatmapTileService extends TileGenerationService {
 
                     if (mx >= 0 && mx < fetchPartsX && my >= 0 && my < fetchPartsY) {
                         final int idx = mx + fetchPartsX * (fetchPartsY - 1 - my);
-                        values[idx] = val;
+                        if (val != null) {
+                            values[idx] = val;
+                        }
+                        technologies[idx] = technology;
                         // countsReal[idx] = count;
-                        if (count > ALPHA_MAX)
-                            count = ALPHA_MAX;
-                        countsRel[idx] = count;
+                        int c = (count == null) ? 1 : count;
+                        if (c > ALPHA_MAX)
+                            c = ALPHA_MAX;
+                        countsRel[idx] = c;
                     }
                 }
 
@@ -222,15 +248,16 @@ public class HeatmapTileService extends TileGenerationService {
                 return null;
 
             return drawImage(tileSizeIdx, tileSize, partSizeFactor, partSizePixels,
-                    fetchPartsX, transparency, values, countsRel, mo);
+                    fetchPartsX, transparency, values, countsRel, technologies, mo);
 
         }
         return null;
     }
 
     private byte[] drawImage(int tileSizeIdx, int tileSize, int partSizeFactor,
-                                          int partSizePixels, int fetchPartsX, double transparency,
-                                          double[] values, int[] countsRel, MapServerOptions.MapOption mo) {
+                             int partSizePixels, int fetchPartsX, double transparency,
+                             double[] values, int[] countsRel, Integer[] technologies,
+                             MapServerOptions.MapOption mo) {
         final Image img = generateImage(tileSizeIdx);
 
         final int[] pixels = new int[tileSize * tileSize];
@@ -246,16 +273,33 @@ public class HeatmapTileService extends TileGenerationService {
                 double alphaWeigth = 0;
                 double valueWeight = 0;
                 double valueMissing = 0;
+                // fences-only: figure out the dominant (most weighted) technology and offline weight
+                double dominantTechWeight = 0;
+                Integer dominantTech = null;
+                double offlineWeight = 0;
                 final int startIdx = mx - HORIZON_OFFSET + fetchPartsX * (my - HORIZON_OFFSET);
 
                 for (int i = 0; i < HORIZON_SIZE; i++)
                 {
                     final int idx = startIdx + i % HORIZON + fetchPartsX * (i / HORIZON);
+                    final double factor = FACTORS[partSizeFactor][i + relOffset];
                     if (Double.isNaN(values[idx]))
-                        valueMissing += FACTORS[partSizeFactor][i + relOffset];
+                        valueMissing += factor;
                     else
-                        valueWeight += FACTORS[partSizeFactor][i + relOffset] * values[idx];
-                    alphaWeigth += FACTORS[partSizeFactor][i + relOffset] * countsRel[idx];
+                        valueWeight += factor * values[idx];
+                    alphaWeigth += factor * countsRel[idx];
+
+                    if (mo.isFences) {
+                        final Integer tech = technologies[idx];
+                        if (tech != null) {
+                            if (Objects.equals(tech, Constants.TECHNOLOGY_OFFLINE)) {
+                                offlineWeight += factor;
+                            } else if (factor > dominantTechWeight) {
+                                dominantTechWeight = factor;
+                                dominantTech = tech;
+                            }
+                        }
+                    }
                 }
 
                 if (valueMissing > 0)
@@ -273,6 +317,21 @@ public class HeatmapTileService extends TileGenerationService {
                 assert alpha >= 0 || alpha <= 255 : alpha;
                 if (alpha == 0)
                     pixels[x + y * tileSize] = 0;
+                else if (mo.isFences) {
+                    final int rgb;
+                    if (dominantTech == null && offlineWeight > 0) {
+                        // only offline data influences this pixel -> offline gray
+                        rgb = COLOR_OFFLINE_RGB;
+                    } else {
+                        final Integer signal = Double.isNaN(valueWeight)
+                                ? null
+                                : (int) Math.round(valueWeight);
+                        final Color c = HelperFunctions.technologyAndSignalStrengthToColor(
+                                dominantTech, signal, null, null);
+                        rgb = c.getRGB() & 0xffffff;
+                    }
+                    pixels[x + y * tileSize] = rgb | alpha;
+                }
                 else
                     pixels[x + y * tileSize] = valueToColor(mo.colorsSorted, mo.intervalsSorted, valueWeight)
                             | alpha;
