@@ -42,6 +42,15 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
 
+# springdoc / Swagger UI. Serve the OpenAPI spec at /api-docs(.yaml) instead of the springdoc
+# default /v3/api-docs, for parity with the control & statistics servers (where a JVM-global
+# springdoc.swagger-ui.url=/api-docs.yaml from a shared Tomcat's catalina.properties requires it).
+# Map runs on its own Tomcat without that property, so this is precautionary; Swagger UI resolves
+# the spec via swagger-config regardless of environment.
+springdoc:
+  api-docs:
+    path: /api-docs
+
 ---
 spring:
   config:
