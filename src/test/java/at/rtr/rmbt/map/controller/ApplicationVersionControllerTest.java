@@ -33,7 +33,7 @@ class ApplicationVersionControllerTest {
 
     @Test
     void testGetApplicationVersion() throws Exception {
-        ApplicationVersionResponse response = new ApplicationVersionResponse("1","a","b");
+        ApplicationVersionResponse response = new ApplicationVersionResponse("1","a","b","none");
         when(applicationVersionService.getApplicationVersion()).thenReturn(response);
         mockMvc.perform(MockMvcRequestBuilders.get(URIConstants.VERSION))
                 .andDo(print())

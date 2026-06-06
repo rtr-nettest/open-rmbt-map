@@ -5,10 +5,15 @@ import at.rtr.rmbt.map.model.Settings;
 import at.rtr.rmbt.map.repository.SettingsRepository;
 import at.rtr.rmbt.map.dto.ApplicationVersionResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ApplicationVersionService {
     public final static String SYSTEM_UUID_KEY = "system_UUID";
@@ -28,12 +33,44 @@ public class ApplicationVersionService {
 
     private final SettingsRepository settingsRepository;
 
+    /** Optional: present only when Redis is configured (it always is here, but kept optional/robust). */
+    private final ObjectProvider<RedisConnectionFactory> redisConnectionFactory;
+
     public ApplicationVersionResponse getApplicationVersion() {
         return ApplicationVersionResponse.builder()
                 .version(formatVersion(describe, branch, buildTime))
                 .systemUUID(getSystemUUID())
                 .host(applicationHost)
+                .cache(detectCache())
                 .build();
+    }
+
+    /**
+     * Reports the cache backend: {@code "redis"} when a Redis connection factory is configured and
+     * reachable (ping succeeds), otherwise {@code "none"}.
+     */
+    private String detectCache() {
+        final RedisConnectionFactory factory = redisConnectionFactory.getIfAvailable();
+        if (factory == null) {
+            return "none";
+        }
+        RedisConnection connection = null;
+        try {
+            connection = factory.getConnection();
+            connection.ping();
+            return "redis";
+        } catch (Exception e) {
+            log.debug("Redis not reachable for /version cache check: {}", e.getMessage());
+            return "none";
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (Exception ignored) {
+                    // best-effort close
+                }
+            }
+        }
     }
 
     /**

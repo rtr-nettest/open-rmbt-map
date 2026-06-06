@@ -22,4 +22,8 @@ public class ApplicationVersionResponse {
 
     @JsonProperty(value = "host")
     private final String host;
+
+    /** Cache backend in use: {@code "redis"} when a reachable Redis is configured, else {@code "none"}. */
+    @JsonProperty(value = "cache")
+    private final String cache;
 }
