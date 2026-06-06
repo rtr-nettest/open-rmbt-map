@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 
 @Slf4j
@@ -44,6 +46,15 @@ public abstract class TileGenerationService {
 
     @Autowired
     private TaskExecutor executor;
+
+    /**
+     * Cache keys whose stale-tile background refresh is currently queued or running.
+     * Many concurrent requests can hit the same stale tile at once; without this guard
+     * each one enqueues a duplicate refresh task, flooding and saturating the executor
+     * (RejectedExecutionException / "could not add to background"). We enqueue at most
+     * one refresh per key and drop the rest until it completes.
+     */
+    private final Set<String> refreshInProgress = ConcurrentHashMap.newKeySet();
 
     @PostConstruct
     private void initializeStructures() {
@@ -150,29 +161,37 @@ public abstract class TileGenerationService {
                     data = EMPTY_IMAGES[getTileSizeIdx(p)];
                 if (isStale)
                 {
-                    final Runnable refreshCacheRunnable = new Runnable()
-                    {
-                        @Override
-                        public void run()
+                    // Only enqueue a refresh if one isn't already queued/running for this
+                    // key; otherwise the stale tile (returned below) is enough and we avoid
+                    // flooding the executor with duplicate refreshes of the same tile.
+                    if (refreshInProgress.add(cacheKey)) {
+                        final Runnable refreshCacheRunnable = new Runnable()
                         {
-                            try {
-                                log.debug("adding in background: " + cacheKey);
-                                final int tileSizeIdx = getTileSizeIdx(p);
-                                byte[] data = generateTile(p, tileSizeIdx);
-                                CachedTile ct = new CachedTile();
-                                ct.setCreationTime(Instant.now());
-                                ct.setTileContent(data != null ? data : EMPTY_MARKER);
-                                cache.put(cacheKey, ct);
-                            } catch (Exception e) {
-                                log.error("background refresh failed for: " + cacheKey + "; evicting stale entry", e);
-                                cache.evict(cacheKey);
+                            @Override
+                            public void run()
+                            {
+                                try {
+                                    log.debug("adding in background: " + cacheKey);
+                                    final int tileSizeIdx = getTileSizeIdx(p);
+                                    byte[] data = generateTile(p, tileSizeIdx);
+                                    CachedTile ct = new CachedTile();
+                                    ct.setCreationTime(Instant.now());
+                                    ct.setTileContent(data != null ? data : EMPTY_MARKER);
+                                    cache.put(cacheKey, ct);
+                                } catch (Exception e) {
+                                    log.error("background refresh failed for: " + cacheKey + "; evicting stale entry", e);
+                                    cache.evict(cacheKey);
+                                } finally {
+                                    refreshInProgress.remove(cacheKey);
+                                }
                             }
+                        };
+                        try {
+                            executor.execute(refreshCacheRunnable);
+                        } catch (RejectedExecutionException e) {
+                            refreshInProgress.remove(cacheKey);
+                            log.error("could not add to background: " + cacheKey + "; " + e.getMessage());
                         }
-                    };
-                    try {
-                        executor.execute(refreshCacheRunnable);
-                    } catch (RejectedExecutionException e) {
-                        log.error("could not add to background: " + cacheKey + "; " + e.getMessage());
                     }
 
                 }
