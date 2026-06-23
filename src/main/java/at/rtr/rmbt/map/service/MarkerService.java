@@ -125,9 +125,13 @@ public class MarkerService {
 
             final MapServerOptions.MapOption mo = MapServerOptions.getMapOptionMap().get(optionStr);
 
-            final List<MapServerOptions.SQLFilter> filters = new ArrayList<MapServerOptions.SQLFilter>(MapServerOptions.getDefaultMapFilters());
-            filters.add(MapServerOptions.getAccuracyMapFilter());
-
+            final List<MapServerOptions.SQLFilter> filters;
+            if (mo.isFences) {
+                filters = new ArrayList<MapServerOptions.SQLFilter>(MapServerOptions.getGetDefaultFencesFilter());
+            } else {
+                filters = new ArrayList<MapServerOptions.SQLFilter>(MapServerOptions.getDefaultMapFilters());
+                filters.add(MapServerOptions.getAccuracyMapFilter());
+            }
 
             if (parameters.getFilter() != null) {
                 //final Iterator<?> keys = mapFilterObj.keys(); //@TODO
@@ -193,38 +197,71 @@ public class MarkerService {
                 else
                     whereSQL.setLength(0);
 
-                final String sql = String
-                        //need to put alias in quote so postgres does respect case-sensitiveness
-                        //also, the number of columns must not differ
-                        .format("SELECT"
-                                + (useLatLon ? " geo_lat lat, geo_long lon, NULL x, NULL y"
-                                : " NULL lat, NULL lon, ST_X(t.location) x, ST_Y(t.location) y")
-                                + ", t.time, t.timezone, "
-                                + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", t.ping_median \"pingMedian\", t.network_type \"networkType\","
-                                + " t.signal_strength \"signalStrength\", t.lte_rsrp \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
-                                + " t.network_operator_name \"networkOperatorName\", t.network_operator \"networkOperator\","
-                                + " t.network_sim_operator \"networkSimOperator\", t.roaming_type \"roamingType\", t.public_ip_as_name, " //TODO: sim_operator obsoleted by sim_name
-                                + " mprov.shortname \"mobileProviderName\"," // TODO: obsoleted by mobile_network_name
-                                + " prov.shortname provider_text, t.open_test_uuid openTestUuid,"
-                                + " COALESCE(mprov.shortname, t.network_operator_name, prov.shortname, msim.shortname,msim.name,"
-                                + "    prov.name, mprov.name, t.public_ip_as_name, network_sim_operator) \"providerName\", "
-                                + " COALESCE(mnwk.shortname,mnwk.name) \"mobileNetworkName\","
-                                + " COALESCE(msim.shortname,msim.name) \"mobileSimName\", "
-                                + (highlightUUID == null ? " NULL AS uid, NULL AS uuid " : " c.uid, c.uuid")
-                                + " FROM test t"
-                                + " LEFT JOIN mccmnc2name mnwk ON t.mobile_network_id=mnwk.uid"
-                                + " LEFT JOIN mccmnc2name msim ON t.mobile_sim_id=msim.uid"
-                                + " LEFT JOIN provider prov    ON t.provider_id=prov.uid"
-                                + " LEFT JOIN provider mprov   ON t.mobile_provider_id=mprov.uid"
-                                + (highlightUUID == null ? ""
-                                : " LEFT JOIN client c ON (t.client_id=c.uid AND t.uuid=?)")
-                                + " WHERE"
-                                + " %s"
-                                + (requestOpenTestUUID != null ?
-                                " t.open_test_uuid=? "
-                                : " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)")
-                                + " ORDER BY" + (highlightUUID == null ? "" : " c.uid ASC,")
-                                + " t.uid DESC" + " LIMIT 5", whereSQL);
+                final String sql;
+                if (mo.isFences) {
+                    sql = String
+                            .format("SELECT"
+                                    + (useLatLon ? " ST_Y(f.geom4326) lat, ST_X(f.geom4326) lon, NULL x, NULL y"
+                                    : " NULL lat, NULL lon, ST_X(ST_Transform(f.geom4326, 3857)) x, ST_Y(ST_Transform(f.geom4326, 3857)) y")
+                                    + ", t.time, t.timezone, "
+                                    + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", (f.avg_ping_ms *1e6) AS \"pingMedian\", f.technology_id \"networkType\","
+                                    + " NULL \"signalStrength\", f.signal \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
+                                    + " t.network_operator_name \"networkOperatorName\", t.network_operator \"networkOperator\","
+                                    + " t.network_sim_operator \"networkSimOperator\", t.roaming_type \"roamingType\", t.public_ip_as_name, "
+                                    + " mprov.shortname \"mobileProviderName\","
+                                    + " prov.shortname provider_text, t.open_test_uuid openTestUuid,"
+                                    + " COALESCE(mprov.shortname, t.network_operator_name, prov.shortname, msim.shortname,msim.name,"
+                                    + "    prov.name, mprov.name, t.public_ip_as_name, network_sim_operator) \"providerName\", "
+                                    + " COALESCE(mnwk.shortname,mnwk.name) \"mobileNetworkName\","
+                                    + " COALESCE(msim.shortname,msim.name) \"mobileSimName\", "
+                                    + (highlightUUID == null ? " NULL AS uid, NULL AS uuid " : " c.uid, c.uuid")
+                                    + " FROM fences f"
+                                    + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
+                                    + " LEFT JOIN mccmnc2name mnwk ON t.mobile_network_id=mnwk.uid"
+                                    + " LEFT JOIN mccmnc2name msim ON t.mobile_sim_id=msim.uid"
+                                    + " LEFT JOIN provider prov    ON t.provider_id=prov.uid"
+                                    + " LEFT JOIN provider mprov   ON t.mobile_provider_id=mprov.uid"
+                                    + (highlightUUID == null ? ""
+                                    : " LEFT JOIN client c ON (t.client_id=c.uid AND t.uuid=?)")
+                                    + " WHERE"
+                                    + " %s"
+                                    + (requestOpenTestUUID != null ?
+                                    " t.open_test_uuid=? "
+                                    : " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 3857), 4326)")
+                                    + " ORDER BY" + (highlightUUID == null ? "" : " c.uid ASC,")
+                                    + " f.uid DESC" + " LIMIT 5", whereSQL);
+                } else {
+                    sql = String
+                            .format("SELECT"
+                                    + (useLatLon ? " geo_lat lat, geo_long lon, NULL x, NULL y"
+                                    : " NULL lat, NULL lon, ST_X(t.location) x, ST_Y(t.location) y")
+                                    + ", t.time, t.timezone, "
+                                    + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", t.ping_median \"pingMedian\", t.network_type \"networkType\","
+                                    + " t.signal_strength \"signalStrength\", t.lte_rsrp \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
+                                    + " t.network_operator_name \"networkOperatorName\", t.network_operator \"networkOperator\","
+                                    + " t.network_sim_operator \"networkSimOperator\", t.roaming_type \"roamingType\", t.public_ip_as_name, "
+                                    + " mprov.shortname \"mobileProviderName\","
+                                    + " prov.shortname provider_text, t.open_test_uuid openTestUuid,"
+                                    + " COALESCE(mprov.shortname, t.network_operator_name, prov.shortname, msim.shortname,msim.name,"
+                                    + "    prov.name, mprov.name, t.public_ip_as_name, network_sim_operator) \"providerName\", "
+                                    + " COALESCE(mnwk.shortname,mnwk.name) \"mobileNetworkName\","
+                                    + " COALESCE(msim.shortname,msim.name) \"mobileSimName\", "
+                                    + (highlightUUID == null ? " NULL AS uid, NULL AS uuid " : " c.uid, c.uuid")
+                                    + " FROM test t"
+                                    + " LEFT JOIN mccmnc2name mnwk ON t.mobile_network_id=mnwk.uid"
+                                    + " LEFT JOIN mccmnc2name msim ON t.mobile_sim_id=msim.uid"
+                                    + " LEFT JOIN provider prov    ON t.provider_id=prov.uid"
+                                    + " LEFT JOIN provider mprov   ON t.mobile_provider_id=mprov.uid"
+                                    + (highlightUUID == null ? ""
+                                    : " LEFT JOIN client c ON (t.client_id=c.uid AND t.uuid=?)")
+                                    + " WHERE"
+                                    + " %s"
+                                    + (requestOpenTestUUID != null ?
+                                    " t.open_test_uuid=? "
+                                    : " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)")
+                                    + " ORDER BY" + (highlightUUID == null ? "" : " c.uid ASC,")
+                                    + " t.uid DESC" + " LIMIT 5", whereSQL);
+                }
 
                 //System.out.println("SQL: " + sql);
                 ps = entityManager.createNativeQuery(sql, "MarkerResultMapping");
@@ -297,49 +334,54 @@ public class MarkerService {
                         final long time = date.getTime();
                         markerResponse.setTime(time);
 
-                        final int fieldDown = rs.getSpeedDownload().intValue();
-                        MarkerResponse.SingleMarkerMetricItem singleItem = new MarkerResponse.SingleMarkerMetricItem();
-                        singleItem.setTitle(labels.getString("RESULT_DOWNLOAD"));
-                        final String downloadString = String.format("%s %s",
-                                FormatUtils.formatSpeed(fieldDown), labels.getString("RESULT_DOWNLOAD_UNIT"));
-                        singleItem.setValue(downloadString);
-                        singleItem.setClassification(
-                                Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
-
-
-                        markerResponse.getMeasurement().add(singleItem);
-
-
-                        final int fieldUp = rs.getSpeedUpload();
-                        singleItem = new MarkerResponse.SingleMarkerMetricItem();
-                        singleItem.setTitle(labels.getString("RESULT_UPLOAD"));
-                        final String uploadString = String.format("%s %s",
-                                FormatUtils.formatSpeed(fieldUp),
-                                labels.getString("RESULT_UPLOAD_UNIT"));
-                        singleItem.setValue(uploadString);
-                        singleItem.setClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
-
-                        markerResponse.getMeasurement().add(singleItem);
-
                         MarkerResponse.SingleMarkerMeasurementResult measurementResult = new MarkerResponse.SingleMarkerMeasurementResult();
-                        {
-                            measurementResult.setDownloadKbps(fieldDown);
-                            measurementResult.setDownloadClassification(Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
-                            measurementResult.setUploadKbps(fieldUp);
-                            measurementResult.setUploadClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
+                        MarkerResponse.SingleMarkerMetricItem singleItem;
+                        if (rs.getSpeedDownload() != null && rs.getSpeedUpload() != null) {
+                            final int fieldDown = rs.getSpeedDownload().intValue();
+                            singleItem = new MarkerResponse.SingleMarkerMetricItem();
+                            singleItem.setTitle(labels.getString("RESULT_DOWNLOAD"));
+                            final String downloadString = String.format("%s %s",
+                                    FormatUtils.formatSpeed(fieldDown), labels.getString("RESULT_DOWNLOAD_UNIT"));
+                            singleItem.setValue(downloadString);
+                            singleItem.setClassification(
+                                    Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
+
+
+                            markerResponse.getMeasurement().add(singleItem);
+
+                            final int fieldUp = rs.getSpeedUpload();
+                            singleItem = new MarkerResponse.SingleMarkerMetricItem();
+                            singleItem.setTitle(labels.getString("RESULT_UPLOAD"));
+                            final String uploadString = String.format("%s %s",
+                                    FormatUtils.formatSpeed(fieldUp),
+                                    labels.getString("RESULT_UPLOAD_UNIT"));
+                            singleItem.setValue(uploadString);
+                            singleItem.setClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
+
+                            markerResponse.getMeasurement().add(singleItem);
+
+                            {
+                                measurementResult.setDownloadKbps(fieldDown);
+                                measurementResult.setDownloadClassification(Classification.classify(Classification.THRESHOLD_DOWNLOAD, fieldDown, classificationCount));
+                                measurementResult.setUploadKbps(fieldUp);
+                                measurementResult.setUploadClassification(Classification.classify(Classification.THRESHOLD_UPLOAD, fieldUp, classificationCount));
+                            }
                         }
 
-                        final long fieldPing = rs.getPingMedian();
-                        singleItem = new MarkerResponse.SingleMarkerMetricItem();
-                        singleItem.setTitle(labels.getString("RESULT_PING"));
-                        final String pingString = String.format("%s %s", FormatUtils.formatPing(rs.getPingMedian()),
-                                labels.getString("RESULT_PING_UNIT"));
-                        singleItem.setValue(pingString);
-                        singleItem.setClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
 
-                        markerResponse.getMeasurement().add(singleItem);
-                        measurementResult.setPingMs(fieldPing / 1000000d);
-                        measurementResult.setPingClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
+                        if ((rs.getPingMedian() != null)) {
+                            final long fieldPing = rs.getPingMedian();
+                            singleItem = new MarkerResponse.SingleMarkerMetricItem();
+                            singleItem.setTitle(labels.getString("RESULT_PING"));
+                            final String pingString = String.format("%s %s", FormatUtils.formatPing(rs.getPingMedian()),
+                                    labels.getString("RESULT_PING_UNIT"));
+                            singleItem.setValue(pingString);
+                            singleItem.setClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
+
+                            markerResponse.getMeasurement().add(singleItem);
+                            measurementResult.setPingMs(fieldPing / 1000000d);
+                            measurementResult.setPingClassification(Classification.classify(Classification.THRESHOLD_PING, fieldPing, classificationCount));
+                        }
 
                         final Integer networkType = rs.getNetworkType();
 
@@ -382,7 +424,8 @@ public class MarkerService {
                         networkInfo.setNetworkTypeLabel(HelperFunctions.getNetworkTypeName(networkType));
 
 
-                        if (networkType == 98 || networkType == 99) // mobile wifi or browser
+                        if (networkType != null &&
+                                (networkType == 98 || networkType == 99)) // mobile wifi or browser
                         {
                             String providerText = "Unknown";
                             if (!StringUtils.isBlank(rs.getProviderName()))
@@ -419,7 +462,7 @@ public class MarkerService {
                             //network
                             if (!StringUtils.isBlank(rs.getNetworkOperator())) {
                                 final String mobileNetworkString;
-                                if (rs.getRoamingType() != 2) { //not international roaming - display name of home network
+                                if (rs.getRoamingType() != null && rs.getRoamingType() != 2) { //not international roaming - display name of home network
                                     if (StringUtils.isBlank(rs.getMobileSimName())) {
                                         mobileNetworkString = rs.getNetworkOperator();
                                     } else {

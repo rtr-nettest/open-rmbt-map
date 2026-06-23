@@ -1,7 +1,9 @@
 package at.rtr.rmbt.map.service;
 
+import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
 import at.rtr.rmbt.map.model.TilesQueryResult;
+import at.rtr.rmbt.map.util.HelperFunctions;
 import at.rtr.rmbt.map.util.MapServerOptions;
 import at.rtr.rmbt.map.util.TileParameters;
 import jakarta.persistence.EntityManager;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -57,21 +60,36 @@ public class PointTileService extends TileGenerationService {
             baseTile = null;
         }
 
-
-        filters.add(MapServerOptions.getAccuracyMapFilter());
+        if (!mo.isFences) {
+            filters.add(MapServerOptions.getAccuracyMapFilter());
+        }
 
         final StringBuilder whereSQL = new StringBuilder(mo.sqlFilter);
-        for (final MapServerOptions.SQLFilter sf : filters)
+        for (final MapServerOptions.SQLFilter sf : filters) {
             whereSQL.append(" AND ").append(sf.getWhere());
+        }
 
-        final String sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, %s val"
-                + " FROM test t"
-                + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
-                + " WHERE "
-                + " %s"
-                + " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)"
-                + " ORDER BY"
-                + " t.uid", mo.valueColumn, whereSQL);
+        final String sql;
+        if (mo.isFences) {
+            sql = String.format("SELECT ST_X(ST_Transform(f.geom4326, 3857)) gx, ST_Y(ST_Transform(f.geom4326, 3857)) gy, NULL count, %s val, technology_id technology"
+                    + " FROM fences f"
+                    + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
+                    + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
+                    + " WHERE "
+                    + " %s"
+                    + " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 3857), 4326)"
+                    + " ORDER BY"
+                    + " f.uid", mo.valueColumn, whereSQL);
+        } else {
+            sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, %s val, network_type technology"
+                    + " FROM test t"
+                    + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
+                    + " WHERE "
+                    + " %s"
+                    + " AND location && ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 900913)"
+                    + " ORDER BY"
+                    + " t.uid", mo.valueColumn, whereSQL);
+        }
 
         final double diameter = params.getPointDiameter();
         final double radius = diameter / 2d;
@@ -80,6 +98,7 @@ public class PointTileService extends TileGenerationService {
         final int transparency = (int) Math.round(params.getTransparency() * 255);
         final boolean noFill = params.isNoFill();
         final boolean noColor = params.isNoColor();
+        final int noFenceBorderBeforeZoom = 13;
 
         final Color borderColor = new Color(0, 0, 0, transparency);
         final Color highlightBorderColor = new Color(0, 0, 0, transparency);
@@ -88,12 +107,13 @@ public class PointTileService extends TileGenerationService {
         final Color colorYellow = new Color(255, 255, 0, transparency);
         final Color colorRed = new Color(255, 0, 0, transparency);
         final Color colorGray = new Color(128, 128, 128, transparency);
+        final Color colorOffline = new Color(128, 128, 128, transparency);
 
         final List<Dot> dots = new ArrayList<>();
 
         if (entityManager != null) {
             try {
-                Query ps = entityManager.createNativeQuery(sql, "TilesQueryResultMapping");
+                Query ps = entityManager.createNativeQuery(sql, "TilesQueryResultMappingWithTechnology");
 
                 int i = 1;
 
@@ -119,30 +139,42 @@ public class PointTileService extends TileGenerationService {
 
                     final double cx = rs.getGx();
                     final double cy = rs.getGy();
-                    final long value = rs.getVal().longValue();
 
                     final boolean highlight = highlightUUID != null;
-
-                    final int classification = noColor || noFill ? 0 : mo.getClassification(value);
-
                     final Color color;
-                    switch (classification) {
-                        case 4:
-                            color = colorUltraGreen;
-                            break;
-                        case 3:
-                            color = colorGreen;
-                            break;
-                        case 2:
-                            color = colorYellow;
-                            break;
-                        case 1:
-                            color = colorRed;
-                            break;
-                        default:
-                            color = colorGray;
-                            break;
+
+                    if (rs.getVal() == null && Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
+                        color = colorOffline;
+                    } else if (mo.isFences() && (rs.getVal() == null || rs.getVal() < 0)) {
+                        Integer intValue = (rs.getVal() == null) ? null : rs.getVal().intValue();
+                        color = HelperFunctions.technologyAndSignalStrengthToColor(rs.getTechnology(), intValue, null, null);
                     }
+                    else if (rs.getVal() == null) {
+                        continue; //e.g. signal tests on iOS
+                    } else {
+                        final long value = rs.getVal().longValue();
+                        final int classification = noColor || noFill ? 0 : mo.getClassification(value);
+
+
+                        switch (classification) {
+                            case 4:
+                                color = colorUltraGreen;
+                                break;
+                            case 3:
+                                color = colorGreen;
+                                break;
+                            case 2:
+                                color = colorYellow;
+                                break;
+                            case 1:
+                                color = colorRed;
+                                break;
+                            default:
+                                color = colorGray;
+                                break;
+                        }
+                    }
+
 
                     dots.add(new Dot(cx, cy, color, highlight));
                 }
@@ -150,7 +182,14 @@ public class PointTileService extends TileGenerationService {
                 if (_emptyTile)
                     return baseTile;
 
-                final byte[] data = drawImage(baseTile, diameter, dots, tileSizeIdx, noFill, triangleHeight, triangleSide, box, highlightBorderColor, radius, borderColor);
+                final boolean drawBorder;
+                if (mo.isFences && zoom <= noFenceBorderBeforeZoom) {
+                    drawBorder = false;
+                } else {
+                    drawBorder = true;
+                }
+
+                final byte[] data = drawImage(baseTile, diameter, dots, tileSizeIdx, noFill, triangleHeight, triangleSide, box, highlightBorderColor, radius, borderColor, drawBorder);
                 return data;
             } catch (SQLException | IOException ex) {
                 throw new RuntimeException(ex);
@@ -163,7 +202,7 @@ public class PointTileService extends TileGenerationService {
     }
 
     private byte[] drawImage(byte[] baseTile, double diameter, List<Dot> dots, int tileSizeIdx, boolean noFill, double triangleHeight, double triangleSide, DBox box,
-                                          Color highlightBorderColor, double radius, Color borderColor) throws IOException {
+                                          Color highlightBorderColor, double radius, Color borderColor, boolean drawBorder) throws IOException {
         final Image img = generateImage(tileSizeIdx);
         final Graphics2D g = img.g;
 
@@ -207,7 +246,12 @@ public class PointTileService extends TileGenerationService {
                     g.setPaint(dot.color);
                     g.fill(shape);
                 }
-                g.setPaint(borderColor);
+                if (drawBorder) {
+                    g.setPaint(borderColor);
+                }
+                else {
+                    g.setPaint(dot.color);
+                }
                 g.draw(shape);
             }
         }
