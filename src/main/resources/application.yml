@@ -1,6 +1,8 @@
 app:
   defaultLanguage: en
   supportedLanguages: de,en,hr,sv,pl,es,is,fr,nb,cs
+  # Opt-in for the "mobile/fences" map option. Only advertised/served when true.
+  mobile_fences: false
 server:
   port: 8080
   servlet:

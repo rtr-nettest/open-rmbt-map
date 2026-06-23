@@ -844,6 +844,21 @@ final public class MapServerOptions
         return mapFilterMap.containsKey(name);
     }
 
+    /** Map option key for the mobile coverage fences layer; opt-in via {@code app.mobile_fences}. */
+    public static final String MOBILE_FENCES_OPTION = "mobile/fences";
+
+    /**
+     * Enables or disables the {@code mobile/fences} map option at startup. When disabled the option is
+     * removed from {@link #mapOptionMap} so it is not advertised (/tiles/info, /tiles/filters) nor served.
+     * Removing (rather than conditionally adding) keeps the remaining entries in their original order,
+     * which the info/filter services rely on to group options by type prefix.
+     */
+    public static void setMobileFencesEnabled(final boolean enabled)
+    {
+        if (!enabled)
+            mapOptionMap.remove(MOBILE_FENCES_OPTION);
+    }
+
     /**
      * Speed in mbps to log for db helper function
      * @param mbps
