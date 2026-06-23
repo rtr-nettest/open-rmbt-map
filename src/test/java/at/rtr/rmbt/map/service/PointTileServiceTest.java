@@ -43,7 +43,7 @@ class PointTileServiceTest {
 
     @Test
     void generateTile() {
-        when(entityManager.createNativeQuery(anyString(), eq("TilesQueryResultMapping"))).thenReturn(query);
+        when(entityManager.createNativeQuery(anyString(), eq("TilesQueryResultMappingWithTechnology"))).thenReturn(query);
         when(query.getResultList()).thenReturn(Collections.emptyList());
 
         TilesRequest tr = new TilesRequest(7, 70, 44, 0.5f, null, "mobile/download",
