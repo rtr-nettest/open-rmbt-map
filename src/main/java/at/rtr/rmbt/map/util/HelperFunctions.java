@@ -1,6 +1,7 @@
 package at.rtr.rmbt.map.util;
 
 
+import at.rtr.rmbt.map.constant.Constants;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -244,18 +245,18 @@ public class HelperFunctions {
         Color baseColor;
         //TODO: Calculate once, static vars
         if (networkTypeName.contains("2G")) {
-            baseColor = Color.decode("#FFDE00");
+            baseColor = new Color(Constants.COLOR_2G_RGB);
         }
         else if (networkTypeName.contains("3G")) {
-            baseColor = Color.decode("#EFFF00");
+            baseColor = new Color(Constants.COLOR_3G_RGB);
         } else if (networkTypeName.contains("4G")) {
-            baseColor = Color.decode("#00DEFF");
+            baseColor = new Color(Constants.COLOR_4G_RGB);
         }
         else if (networkTypeName.contains("5G SA")) {
-            baseColor = Color.decode("#5E00FF");
+            baseColor = new Color(Constants.COLOR_5G_SA_RGB);
         }
         else if (networkTypeName.contains("5G")) {
-            baseColor = Color.decode("#0091FF");
+            baseColor = new Color(Constants.COLOR_5G_RGB);
         } else {
             baseColor = Color.decode("#FFFFFF");
         }

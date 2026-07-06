@@ -289,8 +289,32 @@ final public class MapServerOptions
      cap_mobile_green_center,
      cap_mobile_green_darkgreen,
      cap_mobile_darkgreen_center,
-     cap_mobile_end 
+     cap_mobile_end
    };
+
+   // mobile fences (signal measurement)
+   // legend by technology; base colors as in HelperFunctions.technologyAndSignalStrengthToColor
+   protected static final int[] colors_fences = new int[]{
+     Constants.COLOR_OFFLINE_RGB,
+     Constants.COLOR_2G_RGB,
+     Constants.COLOR_3G_RGB,
+     Constants.COLOR_4G_RGB,
+     Constants.COLOR_5G_RGB,
+     Constants.COLOR_5G_SA_RGB
+   };
+
+   protected static final String[] captions_fences = new String[] {
+     "Offline",
+     "2G",
+     "3G",
+     "4G",
+     "5G",
+     "5G SA"
+   };
+
+   // fences tiles are colored by technology and signal strength, not by these intervals;
+   // required only to satisfy MapOption (one entry per legend color)
+   protected static final double[] intervals_fences = new double[]{0, 1, 2, 3, 4, 5};
 
 
     @Getter
@@ -389,9 +413,9 @@ final public class MapServerOptions
             put("mobile/fences", new MapOption("f.signal",
                     "f.signal",
                     "(f.signal is not null or technology_id = " + Constants.TECHNOLOGY_OFFLINE + ")",
-                    colors_rgb,
-                    signal_mobile,
-                    captions_mobile,
+                    colors_fences,
+                    intervals_fences,
+                    captions_fences,
                     Classification.THRESHOLD_SIGNAL_MOBILE,
                     Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
                     "heatmap",

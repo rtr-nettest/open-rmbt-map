@@ -12,6 +12,11 @@ public interface Constants {
     public enum TILE_TYPE {POINT, HEATMAP, SHAPE}
     Integer TECHNOLOGY_OFFLINE = 1000;
     int COLOR_OFFLINE_RGB = 0x808080;
+    int COLOR_2G_RGB = 0xFFDE00;
+    int COLOR_3G_RGB = 0xEFFF00;
+    int COLOR_4G_RGB = 0x00DEFF;
+    int COLOR_5G_RGB = 0x0091FF;
+    int COLOR_5G_SA_RGB = 0x5E00FF;
 
     Float SHAPE_DEFAULT_TRANSPARENCY = 0.4f;
     Float POINT_DEFAULT_TRANSPARENCY = 0.6f;
