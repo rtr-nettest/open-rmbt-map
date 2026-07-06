@@ -261,6 +261,12 @@ public class HeatmapTileService extends TileGenerationService {
         final Image img = generateImage(tileSizeIdx);
 
         final int[] pixels = new int[tileSize * tileSize];
+
+        // fences-only: per-pixel scratch buffers to accumulate the weight of each
+        // technology (incl. offline) in the neighborhood; at most one entry per cell
+        final int[] neighTechs = new int[HORIZON_SIZE];
+        final double[] neighTechWeights = new double[HORIZON_SIZE];
+
         for (int y = 0; y < tileSize; y++)
             for (int x = 0; x < tileSize; x++)
             {
@@ -273,10 +279,8 @@ public class HeatmapTileService extends TileGenerationService {
                 double alphaWeigth = 0;
                 double valueWeight = 0;
                 double valueMissing = 0;
-                // fences-only: figure out the dominant (most weighted) technology and offline weight
-                double dominantTechWeight = 0;
-                Integer dominantTech = null;
-                double offlineWeight = 0;
+                // fences-only: number of distinct technologies seen in the neighborhood
+                int neighTechCount = 0;
                 final int startIdx = mx - HORIZON_OFFSET + fetchPartsX * (my - HORIZON_OFFSET);
 
                 for (int i = 0; i < HORIZON_SIZE; i++)
@@ -292,13 +296,26 @@ public class HeatmapTileService extends TileGenerationService {
                     if (mo.isFences) {
                         final Integer tech = technologies[idx];
                         if (tech != null) {
-                            if (Objects.equals(tech, Constants.TECHNOLOGY_OFFLINE)) {
-                                offlineWeight += factor;
-                            } else if (factor > dominantTechWeight) {
-                                dominantTechWeight = factor;
-                                dominantTech = tech;
+                            int t = 0;
+                            while (t < neighTechCount && neighTechs[t] != tech)
+                                t++;
+                            if (t == neighTechCount) {
+                                neighTechs[neighTechCount] = tech;
+                                neighTechWeights[neighTechCount++] = factor;
+                            } else {
+                                neighTechWeights[t] += factor;
                             }
                         }
+                    }
+                }
+
+                // the dominant technology is the one with the largest accumulated weight
+                double dominantTechWeight = 0;
+                Integer dominantTech = null;
+                for (int t = 0; t < neighTechCount; t++) {
+                    if (neighTechWeights[t] > dominantTechWeight) {
+                        dominantTechWeight = neighTechWeights[t];
+                        dominantTech = neighTechs[t];
                     }
                 }
 
@@ -319,8 +336,8 @@ public class HeatmapTileService extends TileGenerationService {
                     pixels[x + y * tileSize] = 0;
                 else if (mo.isFences) {
                     final int rgb;
-                    if (dominantTech == null && offlineWeight > 0) {
-                        // only offline data influences this pixel -> offline gray
+                    if (Objects.equals(dominantTech, Constants.TECHNOLOGY_OFFLINE)) {
+                        // offline dominates this pixel -> offline gray
                         rgb = COLOR_OFFLINE_RGB;
                     } else {
                         final Integer signal = Double.isNaN(valueWeight)
