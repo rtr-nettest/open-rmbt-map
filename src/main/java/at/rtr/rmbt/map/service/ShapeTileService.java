@@ -1,7 +1,9 @@
 package at.rtr.rmbt.map.service;
 
+import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.dto.TilesRequest;
 import at.rtr.rmbt.map.model.ShapeTilesQueryResult;
+import at.rtr.rmbt.map.util.HelperFunctions;
 import at.rtr.rmbt.map.util.MapServerOptions;
 import at.rtr.rmbt.map.util.TileParameters;
 import jakarta.persistence.EntityManager;
@@ -22,11 +24,15 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static at.rtr.rmbt.map.util.HelperFunctions.valueToColor;
 
 @Service
 public class ShapeTileService extends TileGenerationService {
+
+    // offline fences color (gray), matches PointTileService's offline color
+    private final static int COLOR_OFFLINE_RGB = 0x808080;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -65,14 +71,17 @@ public class ShapeTileService extends TileGenerationService {
                     final String sql;
                     if (mo.isFences) {
                         // fences join to bev_vgd via test -> test_location (same as non-fences, but through fences table)
+                        // most-common technology per shape (mode); aggregated alongside the value/count
+                        // count over technology_id (not signal) so offline shapes (signal == null) are still counted
                         sql = String.format(
                                 "WITH box AS"
                                         + " (SELECT ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?),"
                                         + " ST_Point(?,?)), 3857), 31287) AS box)"
                                         + " SELECT"
                                         + " (CAST (ST_SnapToGrid(ST_Transform(ST_intersection(p.geom, box.box), 3857), ?,?,?,?) AS VARCHAR)) AS geom,"
-                                        + " count(%1$s) count,"
-                                        + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val"
+                                        + " count(f.technology_id) count,"
+                                        + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
+                                        + " MODE() WITHIN GROUP (ORDER BY f.technology_id) technology"
                                         + " FROM box, bev_vgd p"
                                         + " JOIN test_location tl ON tl.kg_nr_bev=p.kg_nr_int"
                                         + " JOIN fences f ON f.open_test_uuid = tl.open_test_uuid"
@@ -102,7 +111,11 @@ public class ShapeTileService extends TileGenerationService {
                                     + " GROUP BY p.geom, box.box", mo.valueColumnLog, whereSQL);
                 }
 
-                Query ps = entityManager.createNativeQuery(sql, "ShapeTilesQueryResultMapping");
+                // fences need the technology column -> use the technology-aware result mapping
+                final String resultMapping = mo.isFences
+                        ? "ShapeTilesQueryResultMappingWithTechnology"
+                        : "ShapeTilesQueryResultMapping";
+                Query ps = entityManager.createNativeQuery(sql, resultMapping);
 
                 int idx = 1;
 
@@ -134,8 +147,23 @@ public class ShapeTileService extends TileGenerationService {
                         final Geometry geom = GeometryBuilder.geomFromString(rs.getGeom());
 
                         final long count = rs.getCount();
-                        final double val = rs.getVal();
-                        final int colorInt = valueToColor(mo.colorsSorted, mo.intervalsSorted, val);
+                        final Double val = rs.getVal();
+
+                        final int colorInt;
+                        if (mo.isFences) {
+                            // offline fences shapes have no signal value but must still be rendered
+                            if (Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
+                                colorInt = COLOR_OFFLINE_RGB;
+                            } else {
+                                final Integer signal = (val == null) ? null : (int) Math.round(val);
+                                colorInt = HelperFunctions.technologyAndSignalStrengthToColor(
+                                        rs.getTechnology(), signal, null, null).getRGB() & 0xffffff;
+                            }
+                        } else {
+                            if (val == null)
+                                continue;
+                            colorInt = valueToColor(mo.colorsSorted, mo.intervalsSorted, val);
+                        }
                         double transparency = ((double) count / 20d) * _transparency;
                         if (transparency > _transparency)
                             transparency = _transparency;

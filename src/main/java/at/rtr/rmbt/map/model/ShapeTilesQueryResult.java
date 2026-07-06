@@ -12,6 +12,15 @@ import net.postgis.jdbc.geometry.Geometry;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@SqlResultSetMapping(name = "ShapeTilesQueryResultMappingWithTechnology", classes = {
+        @ConstructorResult(targetClass = ShapeTilesQueryResult.class,
+                columns = {
+                        @ColumnResult(name = "geom", type = String.class),
+                        @ColumnResult(name = "count", type = Integer.class),
+                        @ColumnResult(name = "val", type = Double.class),
+                        @ColumnResult(name = "technology", type = Integer.class)
+                }
+        )})
 @SqlResultSetMapping(name = "ShapeTilesQueryResultMapping", classes = {
         @ConstructorResult(targetClass = ShapeTilesQueryResult.class,
                 columns = {
@@ -25,6 +34,7 @@ public class ShapeTilesQueryResult {
     String geom;
     Integer count;
     Double val;
+    Integer technology;
 
     @Id
     private Long id;
