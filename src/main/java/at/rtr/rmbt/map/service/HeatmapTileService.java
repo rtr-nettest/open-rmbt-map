@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static at.rtr.rmbt.map.constant.Constants.COLOR_OFFLINE_RGB;
 import static at.rtr.rmbt.map.util.HelperFunctions.valueToColor;
 
 @Service
@@ -57,8 +58,6 @@ public class HeatmapTileService extends TileGenerationService {
     private final static double ALPHA_TOP = 0.5;
     private final static int ALPHA_MAX = 1;
 
-    // offline fences color (gray), matches PointTileService's offline color
-    private final static int COLOR_OFFLINE_RGB = 0x808080;
 
     private final static boolean DEBUG_LINES = false;
 

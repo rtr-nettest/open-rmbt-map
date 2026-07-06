@@ -26,13 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static at.rtr.rmbt.map.constant.Constants.COLOR_OFFLINE_RGB;
 import static at.rtr.rmbt.map.util.HelperFunctions.valueToColor;
 
 @Service
 public class ShapeTileService extends TileGenerationService {
 
-    // offline fences color (gray), matches PointTileService's offline color
-    private final static int COLOR_OFFLINE_RGB = 0x808080;
 
     @PersistenceContext
     private EntityManager entityManager;

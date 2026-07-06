@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import static at.rtr.rmbt.map.constant.Constants.COLOR_OFFLINE_RGB;
+
 @Service
 public class PointTileService extends TileGenerationService {
 
@@ -107,7 +109,7 @@ public class PointTileService extends TileGenerationService {
         final Color colorYellow = new Color(255, 255, 0, transparency);
         final Color colorRed = new Color(255, 0, 0, transparency);
         final Color colorGray = new Color(128, 128, 128, transparency);
-        final Color colorOffline = new Color(128, 128, 128, transparency);
+        final Color colorOffline = new Color(COLOR_OFFLINE_RGB);
 
         final List<Dot> dots = new ArrayList<>();
 
