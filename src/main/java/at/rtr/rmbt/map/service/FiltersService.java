@@ -137,9 +137,11 @@ public class FiltersService {
             final MapFiltersResponse.Option o = new MapFiltersResponse.Option();
             o.setTitle(labels.getString(title));
             o.setSummary(labels.getString(title + "_SUMMARY"));
-            o.addParameter("technology", Constants.OPTION_TECHNOLOGY_VALUE[i]);
             if ("".equals(Constants.OPTION_TECHNOLOGY_VALUE[i])) {
+                o.addParameter("technology", null);  // null = no filter (v1 keeps the legacy "")
                 o.setDefault(true);
+            } else {
+                o.addParameter("technology", Constants.OPTION_TECHNOLOGY_VALUE[i]);
             }
             option.addOption(o);
         }
@@ -151,7 +153,7 @@ public class FiltersService {
     private MapFiltersResponse.MapFilter getOperators(ResourceBundle labels, final boolean mobile) {
         final MapFiltersResponse.Option optionAll = new MapFiltersResponse.Option();
         optionAll.setTitle(labels.getString("MAP_FILTER_ALL_OPERATORS"));
-        optionAll.addParameter(mobile ? "operator" : "provider", "");
+        optionAll.addParameter(mobile ? "operator" : "provider", null);  // null = no filter (v1 keeps the legacy "")
         optionAll.setDefault(true);
 
         final MapFiltersResponse.MapFilter option = new MapFiltersResponse.MapFilter();
