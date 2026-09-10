@@ -147,9 +147,13 @@ public class PointTileService extends TileGenerationService {
 
                     if (rs.getVal() == null && Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
                         color = colorOffline;
-                    } else if (mo.isFences() && (rs.getVal() == null || rs.getVal() < 0)) {
-                        Integer intValue = (rs.getVal() == null) ? null : rs.getVal().intValue();
-                        color = HelperFunctions.technologyAndSignalStrengthToColor(rs.getTechnology(), intValue, null, null);
+                    } else if (mo.isTechnologyOnly()) {
+                        // the technology layer ignores the signal strength -> always full color
+                        color = HelperFunctions.technologyAndSignalStrengthToColor(rs.getTechnology(),
+                                Constants.TECHNOLOGY_ONLY_SIGNAL, null, null);
+                    } else if (mo.isFences() && rs.getVal() != null && rs.getVal() < 0) {
+                        color = HelperFunctions.technologyAndSignalStrengthToColor(rs.getTechnology(),
+                                rs.getVal().intValue(), null, null);
                     }
                     else if (rs.getVal() == null) {
                         continue; //e.g. signal tests on iOS

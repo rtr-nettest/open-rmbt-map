@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Applies configuration-driven adjustments to the static {@link MapServerOptions#getMapOptionMap()} at
- * startup. Currently gates the {@code mobile/fences} map option behind the {@code app.mobile_fences} flag.
+ * startup. Currently gates the {@code mobile/fences} and {@code mobile/technology} map options behind the
+ * {@code app.mobile_fences} flag.
  */
 @Component
 @Slf4j
@@ -20,7 +21,8 @@ public class MapServerOptionsConfigurer {
     @PostConstruct
     public void configure() {
         MapServerOptions.setMobileFencesEnabled(mobileFencesEnabled);
-        log.info("Map option {} is {}", MapServerOptions.MOBILE_FENCES_OPTION,
+        log.info("Map options {} and {} are {}", MapServerOptions.MOBILE_FENCES_OPTION,
+                MapServerOptions.MOBILE_TECHNOLOGY_OPTION,
                 mobileFencesEnabled ? "enabled" : "disabled");
     }
 }

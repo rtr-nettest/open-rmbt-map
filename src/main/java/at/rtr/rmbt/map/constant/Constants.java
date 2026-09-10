@@ -11,6 +11,8 @@ public interface Constants {
     Integer SIGNIFICANT_PLACES = 2;
     public enum TILE_TYPE {POINT, HEATMAP, SHAPE}
     Integer TECHNOLOGY_OFFLINE = 1000;
+    // signal value of the technology layer: clamped to max signal, i.e. always full color
+    Integer TECHNOLOGY_ONLY_SIGNAL = -85;
     int COLOR_OFFLINE_RGB = 0x808080;
     int COLOR_2G_RGB = 0xFFDE00;
     int COLOR_3G_RGB = 0xEFFF00;

@@ -71,7 +71,8 @@ public class ShapeTileService extends TileGenerationService {
                     if (mo.isFences) {
                         // fences join to bev_vgd via test -> test_location (same as non-fences, but through fences table)
                         // most-common technology per shape (mode); aggregated alongside the value/count
-                        // count over technology_id (not signal) so offline shapes (signal == null) are still counted
+                        // count over technology_id (not signal) so offline shapes (signal == null) are still counted,
+                        // while percentile_disc ignores them (null sort values are not part of the ordered set)
                         sql = String.format(
                                 "WITH box AS"
                                         + " (SELECT ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?),"
@@ -154,7 +155,10 @@ public class ShapeTileService extends TileGenerationService {
                             if (Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
                                 colorInt = COLOR_OFFLINE_RGB;
                             } else {
-                                final Integer signal = (val == null) ? null : (int) Math.round(val);
+                                // the technology layer ignores the signal strength -> always full color
+                                final Integer signal = mo.isTechnologyOnly
+                                        ? Constants.TECHNOLOGY_ONLY_SIGNAL
+                                        : (val == null) ? null : (int) Math.round(val);
                                 colorInt = HelperFunctions.technologyAndSignalStrengthToColor(
                                         rs.getTechnology(), signal, null, null).getRGB() & 0xffffff;
                             }

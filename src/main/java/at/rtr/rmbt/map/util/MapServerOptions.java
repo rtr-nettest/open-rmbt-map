@@ -421,6 +421,19 @@ final public class MapServerOptions
                     "heatmap",
                     false,
                     true));
+            // same as mobile/fences, but showing the technology only (always at full color)
+            put("mobile/technology", new MapOption("f.signal",
+                    "f.signal",
+                    "f.technology_id is not null",
+                    colors_fences,
+                    intervals_fences,
+                    captions_fences,
+                    Classification.THRESHOLD_SIGNAL_MOBILE,
+                    Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
+                    "heatmap",
+                    false,
+                    true,
+                    true));
 
             put("wifi/download", new MapOption("speed_download",
                     "speed_download_log",
@@ -757,6 +770,15 @@ final public class MapServerOptions
                 final String[] classificationCaptions, final String overlayType, final boolean reverseScale,
                          final boolean isFences)
         {
+            this(valueColumn, valueColumnLog, sqlFilter, colors, intervals, captions, classification,
+                    classificationCaptions, overlayType, reverseScale, isFences, false);
+        }
+
+        public MapOption(final String valueColumn, final String valueColumnLog, final String sqlFilter,
+                final int[] colors, final double[] intervals, final String[] captions, final int[] classification,
+                final String[] classificationCaptions, final String overlayType, final boolean reverseScale,
+                         final boolean isFences, final boolean isTechnologyOnly)
+        {
             super();
             this.valueColumn = valueColumn;
             this.valueColumnLog = valueColumnLog;
@@ -768,6 +790,7 @@ final public class MapServerOptions
             this.overlayType = overlayType;
             this.reverseScale = reverseScale;
             this.isFences = isFences;
+            this.isTechnologyOnly = isTechnologyOnly;
             
             
             if (intervals.length != colors.length || intervals.length != captions.length)
@@ -809,6 +832,7 @@ final public class MapServerOptions
         public final String overlayType;
         public final boolean reverseScale;
         public final boolean isFences;
+        public final boolean isTechnologyOnly;
         
         public int getClassification(final long value)
         {
@@ -871,16 +895,23 @@ final public class MapServerOptions
     /** Map option key for the mobile coverage fences layer; opt-in via {@code app.mobile_fences}. */
     public static final String MOBILE_FENCES_OPTION = "mobile/fences";
 
+    /** Map option key for the mobile technology layer; opt-in via {@code app.mobile_fences} as well. */
+    public static final String MOBILE_TECHNOLOGY_OPTION = "mobile/technology";
+
     /**
-     * Enables or disables the {@code mobile/fences} map option at startup. When disabled the option is
-     * removed from {@link #mapOptionMap} so it is not advertised (/tiles/info, /tiles/filters) nor served.
+     * Enables or disables the {@code mobile/fences} and {@code mobile/technology} map options at startup.
+     * When disabled the options are
+     * removed from {@link #mapOptionMap} so they are not advertised (/tiles/info, /tiles/filters) nor served.
      * Removing (rather than conditionally adding) keeps the remaining entries in their original order,
      * which the info/filter services rely on to group options by type prefix.
      */
     public static void setMobileFencesEnabled(final boolean enabled)
     {
         if (!enabled)
+        {
             mapOptionMap.remove(MOBILE_FENCES_OPTION);
+            mapOptionMap.remove(MOBILE_TECHNOLOGY_OPTION);
+        }
     }
 
     /**

@@ -119,7 +119,8 @@ public class HeatmapTileService extends TileGenerationService {
         final String sql;
         if (mo.isFences) {
             // most-common technology per grid cell (mode); aggregated alongside the value/count
-            // count over technology_id (not signal) so offline cells (signal == null) are still counted
+            // count over technology_id (not signal) so offline cells (signal == null) are still counted,
+            // while percentile_disc ignores them (null sort values are not part of the ordered set)
             sql = String.format("SELECT count(f.technology_id) count,"
                     + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
                     + " ST_X(ST_SnapToGrid(ST_Transform(f.geom4326, 3857), ?,?,?,?)) gx,"
@@ -214,7 +215,7 @@ public class HeatmapTileService extends TileGenerationService {
                     if (gx == null || gy == null) {
                         continue;
                     }
-                    if (!offline && (val == null || count == null || count.equals(0))) {
+                    if (!offline && !mo.isTechnologyOnly && (val == null || count == null || count.equals(0))) {
                         continue;
                     }
 
@@ -340,9 +341,12 @@ public class HeatmapTileService extends TileGenerationService {
                         // offline dominates this pixel -> offline gray
                         rgb = COLOR_OFFLINE_RGB;
                     } else {
-                        final Integer signal = Double.isNaN(valueWeight)
-                                ? null
-                                : (int) Math.round(valueWeight);
+                        // the technology layer ignores the signal strength -> always full color
+                        final Integer signal;
+                        if (mo.isTechnologyOnly)
+                            signal = Constants.TECHNOLOGY_ONLY_SIGNAL;
+                        else
+                            signal = Double.isNaN(valueWeight) ? null : (int) Math.round(valueWeight);
                         final Color c = HelperFunctions.technologyAndSignalStrengthToColor(
                                 dominantTech, signal, null, null);
                         rgb = c.getRGB() & 0xffffff;

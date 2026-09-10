@@ -268,15 +268,8 @@ public class HelperFunctions {
         int clampedSignal = Math.max(minSignal, Math.min(maxSignal, signalStrength));
         double factor = (double) (clampedSignal - minSignal) / (maxSignal - minSignal);
 
-        float[] hsb = Color.RGBtoHSB(
-                baseColor.getRed(),
-                baseColor.getGreen(),
-                baseColor.getBlue(),
-                null
-        );
-
-        //min color is same color but with reduced saturation and brightness
-        Color minColor = Color.getHSBColor(hsb[0], 0.18f, 0.67f);
+        //min color is the offline color, i.e. everything at or below min signal is gray
+        Color minColor = new Color(Constants.COLOR_OFFLINE_RGB);
 
         int red = (int) (minColor.getRed() + factor * (baseColor.getRed() - minColor.getRed()));
         int green = (int) (minColor.getGreen() + factor * (baseColor.getGreen() - minColor.getGreen()));
