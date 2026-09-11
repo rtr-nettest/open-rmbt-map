@@ -81,7 +81,7 @@ public class ShapeTileService extends TileGenerationService {
                                         + " (CAST (ST_SnapToGrid(ST_Transform(ST_intersection(p.geom, box.box), 3857), ?,?,?,?) AS VARCHAR)) AS geom,"
                                         + " count(f.technology_id) count,"
                                         + " percentile_disc(?) WITHIN GROUP (ORDER BY %1$s) AS val,"
-                                        + " MODE() WITHIN GROUP (ORDER BY f.technology_id) technology"
+                                        + " MODE() WITHIN GROUP (ORDER BY %3$s) technology"
                                         + " FROM box, bev_vgd p"
                                         + " JOIN test_location tl ON tl.kg_nr_bev=p.kg_nr_int"
                                         + " JOIN fences f ON f.open_test_uuid = tl.open_test_uuid"
@@ -89,7 +89,8 @@ public class ShapeTileService extends TileGenerationService {
                                         + " WHERE" + " %2$s"
                                         + " AND p.geom && box.box"
                                         + " AND ST_intersects(p.geom, box.box)"
-                                        + " GROUP BY p.geom, box.box", mo.valueColumnLog, whereSQL);
+                                        + " GROUP BY p.geom, box.box", mo.valueColumnLog, whereSQL,
+                                MapServerOptions.FENCES_TECHNOLOGY_SQL);
                     } else {
                         //debugging hint: St_AsText allows human-readable representation of a geometry object
                         sql = String.format(

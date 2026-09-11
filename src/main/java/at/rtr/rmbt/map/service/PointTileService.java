@@ -73,15 +73,15 @@ public class PointTileService extends TileGenerationService {
 
         final String sql;
         if (mo.isFences) {
-            sql = String.format("SELECT ST_X(ST_Transform(f.geom4326, 3857)) gx, ST_Y(ST_Transform(f.geom4326, 3857)) gy, NULL count, %s val, technology_id technology"
+            sql = String.format("SELECT ST_X(ST_Transform(f.geom4326, 3857)) gx, ST_Y(ST_Transform(f.geom4326, 3857)) gy, NULL count, %1$s val, %3$s technology"
                     + " FROM fences f"
                     + " JOIN test t ON f.open_test_uuid = t.open_test_uuid"
                     + (highlightUUID == null ? "" : " JOIN client c ON (t.client_id=c.uid AND c.uuid=?)")
                     + " WHERE "
-                    + " %s"
+                    + " %2$s"
                     + " AND f.geom4326 && ST_Transform(ST_SetSRID(ST_MakeBox2D(ST_Point(?,?), ST_Point(?,?)), 3857), 4326)"
                     + " ORDER BY"
-                    + " f.uid", mo.valueColumn, whereSQL);
+                    + " f.uid", mo.valueColumn, whereSQL, MapServerOptions.FENCES_TECHNOLOGY_SQL);
         } else {
             sql = String.format("SELECT ST_X(t.location) gx, ST_Y(t.location) gy, NULL count, %s val, network_type technology"
                     + " FROM test t"
@@ -145,7 +145,7 @@ public class PointTileService extends TileGenerationService {
                     final boolean highlight = highlightUUID != null;
                     final Color color;
 
-                    if (rs.getVal() == null && Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
+                    if (Objects.equals(rs.getTechnology(), Constants.TECHNOLOGY_OFFLINE)) {
                         color = colorOffline;
                     } else if (mo.isTechnologyOnly()) {
                         // the technology layer ignores the signal strength -> always full color

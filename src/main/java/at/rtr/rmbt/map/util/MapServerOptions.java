@@ -571,6 +571,10 @@ final public class MapServerOptions
         }
     });
     
+    /** Technology of a fence for map coloring: without a ping it is shown as offline (gray). */
+    public static final String FENCES_TECHNOLOGY_SQL =
+            "(CASE WHEN f.avg_ping_ms IS NULL THEN " + Constants.TECHNOLOGY_OFFLINE + " ELSE f.technology_id END)";
+
     @Getter
     protected static final SQLFilter accuracyMapFilter = new SQLFilter("t.geo_accuracy < 2000"); // 2km
     
