@@ -25,6 +25,10 @@
         <!-- Override the Spring Boot BOM's Byte Buddy so Mockito can instrument JDK 25 bytecode; still works on JDK 17. -->
         <byte-buddy.version>1.17.6</byte-buddy.version>
         <start-class>at.rtr.rmbt.map.MapServerConfiguration</start-class>
+        <!-- Set outputTimestamp explicitly to the build time: newer Maven versions default it to
+             1980-02-01T00:00:00Z, which git-commit-id then reports as git.build.time in /version. -->
+        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
+        <project.build.outputTimestamp>${maven.build.timestamp}</project.build.outputTimestamp>
     </properties>
     <dependencies>
         <dependency>
