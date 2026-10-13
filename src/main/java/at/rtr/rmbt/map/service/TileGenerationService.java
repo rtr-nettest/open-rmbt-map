@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.task.TaskExecutor;
@@ -44,7 +45,9 @@ public abstract class TileGenerationService {
     @Autowired
     private CacheManager cacheManager;
 
+    // by name: with @EnableScheduling the "taskScheduler" bean is a TaskExecutor as well
     @Autowired
+    @Qualifier("threadPoolTaskExecutor")
     private TaskExecutor executor;
 
     /**
