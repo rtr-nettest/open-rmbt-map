@@ -1,8 +1,6 @@
 package at.rtr.rmbt.map.service;
 
 import at.rtr.rmbt.map.constant.Constants;
-import at.rtr.rmbt.map.model.Settings;
-import at.rtr.rmbt.map.repository.SettingsRepository;
 import at.rtr.rmbt.map.dto.ApplicationVersionResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +29,7 @@ public class ApplicationVersionService {
     private String applicationHost;
 
 
-    private final SettingsRepository settingsRepository;
+    private final SettingsCache settingsCache;
 
     /** Optional: present only when Redis is configured (it always is here, but kept optional/robust). */
     private final ObjectProvider<RedisConnectionFactory> redisConnectionFactory;
@@ -98,8 +96,6 @@ public class ApplicationVersionService {
     }
 
     private String getSystemUUID() {
-        return settingsRepository.findFirstByKey(SYSTEM_UUID_KEY)
-                .map(Settings::getValue)
-                .orElse(null);
+        return settingsCache.get(SYSTEM_UUID_KEY).orElse(null);
     }
 }

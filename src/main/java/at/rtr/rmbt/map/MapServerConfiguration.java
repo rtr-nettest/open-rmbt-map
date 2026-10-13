@@ -15,10 +15,12 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 
 @SpringBootApplication
+@EnableScheduling // periodic reload of the SettingsCache
 @EnableJpaRepositories(basePackages = {"at.rtr.rmbt.map.repository"})
 @EntityScan(basePackages = {"at.rtr.rmbt.map.model"})
 @PropertySource({"classpath:git.properties"})

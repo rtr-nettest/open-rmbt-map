@@ -3,6 +3,9 @@ app:
   supportedLanguages: de,en,hr,sv,pl,es,is,fr,nb,cs
   # Opt-in for the "mobile/fences" map option. Only advertised/served when true.
   mobile_fences: false
+  settings:
+    # reload interval of the settings table cache (SettingsCache), ISO_8601
+    refreshRate: PT10M
 server:
   port: 8080
   servlet:

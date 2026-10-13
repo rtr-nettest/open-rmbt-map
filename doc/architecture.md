@@ -253,14 +253,16 @@ helpers). Concrete renderers: **`PointTileService`**, **`ShapeTileService`**,
 ### `model/`
 Mostly **query-result holders** (not JPA entities): `TilesQueryResult`, `ShapeTilesQueryResult`,
 `MarkerQueryResult`, `TilesInfoOperatorResults`, and **`CachedTile`** (the Redis-cached tile). The
-one real JPA `@Entity` is **`Settings`** (the `settings` table — system uuid, version, map config).
+one real JPA `@Entity` is **`Settings`** (the `settings` table; the map server reads `system_UUID`).
 
 ### `dto/`
 The wire contract: `TilesRequest`, `MarkerRequest` / `MarkerResponse`, `TilesInfoRequest` /
 `TilesInfoResponse`, `MapFiltersResponse`, `CapabilitiesRequest`, `ApplicationVersionResponse`.
 
 ### `repository/`
-A single Spring Data repository, **`SettingsRepository`** (reads the `settings` entity). All the
+A single Spring Data repository, **`SettingsRepository`** (reads the `settings` entity). It is
+only used by **`service/SettingsCache`**, which keeps the whole table in memory and reloads it every
+`app.settings.refreshRate` (default `PT10M`); the map server reads only `system_UUID` from it. All the
 heavy spatial queries are **native SQL built inside the services**, not derived repositories.
 
 ### `constant/`

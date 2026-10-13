@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 
-import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -29,9 +29,11 @@ class ApplicationVersionServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(settingsRepository.findFirstByKey(ApplicationVersionService.SYSTEM_UUID_KEY))
-                .thenReturn(Optional.of(new Settings(1L, ApplicationVersionService.SYSTEM_UUID_KEY, null, "abcde")));
-        applicationVersionService = new ApplicationVersionService(settingsRepository, redisConnectionFactory);
+        when(settingsRepository.findAll())
+                .thenReturn(List.of(new Settings(1L, ApplicationVersionService.SYSTEM_UUID_KEY, null, "abcde")));
+        SettingsCache settingsCache = new SettingsCache(settingsRepository);
+        settingsCache.refresh();
+        applicationVersionService = new ApplicationVersionService(settingsCache, redisConnectionFactory);
     }
 
     @Test
