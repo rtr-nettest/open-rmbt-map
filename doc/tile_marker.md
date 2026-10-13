@@ -65,7 +65,7 @@ At most **5** markers are returned, newest first.
 | Field | Type | Notes |
 |---|---|---|
 | `time` | integer (ms) | Measurement time, see [Time fields](#time-fields). |
-| `time_string` | string | Measurement time as formatted text, see [Time fields](#time-fields). |
+| `time_string` | string | **Deprecated.** Measurement time as formatted text, see [Time fields](#time-fields). |
 | `highlight` | boolean \| null | `true` if the test belongs to the client given in `filter.highlight`, otherwise `null`. |
 | `lat`, `lon` | number | Marker position (for fences: the fence position). Units depend on the request, see note below. |
 | `open_test_uuid` | string | Open test UUID with `O` prefix. For fences, the UUID of the coverage test the fence belongs to. |
@@ -134,5 +134,7 @@ viewers, including a viewer in New York or one whose browser runs in UTC.
 If `test.timezone` is empty or not a valid time zone ID (e.g. `CEST` or `+02:00` instead
 of `Europe/Vienna`), `time_string` is formatted in **UTC**.
 
-**Showing the viewer's local time:** format `time` on the client, e.g. in JavaScript
-`new Date(marker.time).toLocaleString()`; do not use `time_string` for this.
+**`time_string` is deprecated.** It is still sent for existing clients, but new clients
+should format `time` themselves, which shows the viewer's local time and language, e.g. in
+JavaScript `new Date(marker.time).toLocaleString()`. The field will be removed once no
+client uses it anymore.

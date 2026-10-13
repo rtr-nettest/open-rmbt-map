@@ -2,6 +2,7 @@ package at.rtr.rmbt.map.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -32,9 +33,19 @@ public class MarkerResponse {
         @JsonProperty("open_test_uuid")
         String openTestUuid;
 
+        /**
+         * @deprecated formatted in the time zone of the measuring client, not of the viewer;
+         * clients should format {@link #time} themselves. Still sent for existing clients.
+         */
+        @Deprecated
+        @Schema(deprecated = true, description = "Deprecated: measurement time formatted in the time zone of the measuring client "
+                + "(UTC if unknown), not of the viewer. Format 'time' on the client instead.",
+                example = "Sep 26, 2026, 10:49:21 AM")
         @JsonProperty("time_string")
         String timeString;
 
+        @Schema(description = "Measurement time as Unix epoch in milliseconds (for fences: time of the fence)",
+                example = "1790412561137")
         @JsonProperty
         Long time;
 
