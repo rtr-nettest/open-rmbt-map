@@ -203,7 +203,8 @@ public class MarkerService {
                             .format("SELECT"
                                     + (useLatLon ? " ST_Y(f.geom4326) lat, ST_X(f.geom4326) lon, NULL x, NULL y"
                                     : " NULL lat, NULL lon, ST_X(ST_Transform(f.geom4326, 3857)) x, ST_Y(ST_Transform(f.geom4326, 3857)) y")
-                                    + ", t.time, t.timezone, "
+                                    // time of the individual fence, not the start of the coverage test
+                                    + ", f.fence_time AS time, t.timezone, "
                                     + " t.speed_download \"speedDownload\", t.speed_upload \"speedUpload\", (f.avg_ping_ms *1e6) AS \"pingMedian\", f.technology_id \"networkType\","
                                     + " NULL \"signalStrength\", f.signal \"lteRsrp\", t.wifi_ssid \"wifiSSID\","
                                     + " t.network_operator_name \"networkOperatorName\", t.network_operator \"networkOperator\","
@@ -323,16 +324,10 @@ public class MarkerService {
                         // marker.put("uid", uid);
 
                         final Date date = rs.getTime();
-                        final String tzString = rs.getTimezone();
-                        final TimeZone tz = TimeZone.getTimeZone(tzString);
-                        final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-                                DateFormat.MEDIUM, locale);
-                        dateFormat.setTimeZone(tz);
-                        markerResponse.setTimeString(dateFormat.format(date));
+                        markerResponse.setTimeString(formatTimeString(date, rs.getTimezone(), locale));
 
                         //time as UNIX time (UTC) e.g. 1445361731053
-                        final long time = date.getTime();
-                        markerResponse.setTime(time);
+                        markerResponse.setTime(date != null ? date.getTime() : null);
 
                         MarkerResponse.SingleMarkerMeasurementResult measurementResult = new MarkerResponse.SingleMarkerMeasurementResult();
                         MarkerResponse.SingleMarkerMetricItem singleItem;
@@ -529,5 +524,26 @@ public class MarkerService {
         }
 
         return answer;
+    }
+
+    /**
+     * Formats the measurement time in the time zone reported by the measuring client
+     * ({@code test.timezone}), not in the time zone of the client requesting the marker.
+     * A missing or unknown time zone ID is formatted as UTC (GMT); a missing time yields {@code null}.
+     *
+     * @param date     the measurement time, may be {@code null}
+     * @param timezone the time zone ID stored with the test, may be {@code null}
+     * @param locale   the locale for the date format
+     * @return the formatted time, or {@code null} if {@code date} is {@code null}
+     */
+    static String formatTimeString(Date date, String timezone, Locale locale) {
+        if (date == null) {
+            return null;
+        }
+        // TimeZone.getTimeZone(null) throws a NullPointerException; unknown IDs silently map to GMT
+        final TimeZone tz = TimeZone.getTimeZone(StringUtils.isBlank(timezone) ? "UTC" : timezone);
+        final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
+        dateFormat.setTimeZone(tz);
+        return dateFormat.format(date);
     }
 }
