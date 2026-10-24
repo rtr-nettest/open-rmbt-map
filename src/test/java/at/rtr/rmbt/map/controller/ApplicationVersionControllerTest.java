@@ -7,7 +7,7 @@ import at.rtr.rmbt.map.service.ApplicationVersionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ApplicationVersionControllerTest {
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ApplicationVersionService applicationVersionService;
 
     @BeforeEach

@@ -2,9 +2,6 @@ package at.rtr.rmbt.map;
 
 import at.rtr.rmbt.map.constant.Constants;
 import at.rtr.rmbt.map.model.CachedTile;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +11,11 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 
 import java.time.Duration;
@@ -32,12 +31,13 @@ public class RedisConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // Jackson 3 has java.time built in; Instant stays an ISO string, so existing cache entries remain readable
+        JsonMapper jsonMapper = JsonMapper.builder()
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
 
-        Jackson2JsonRedisSerializer<CachedTile> serializer =
-                new Jackson2JsonRedisSerializer<>(objectMapper, CachedTile.class);
+        JacksonJsonRedisSerializer<CachedTile> serializer =
+                new JacksonJsonRedisSerializer<>(jsonMapper, CachedTile.class);
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofSeconds(Constants.TILE_CACHE_EXPIRE))

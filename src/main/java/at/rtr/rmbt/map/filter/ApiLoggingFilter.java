@@ -394,6 +394,11 @@ public class ApiLoggingFilter implements Filter {
         }
 
         @Override
+        public void sendRedirect(String location, int sc, boolean clearBuffer) throws IOException {
+            original.sendRedirect(location, sc, clearBuffer);
+        }
+
+        @Override
         public void setDateHeader(String name, long date) {
             original.setDateHeader(name, date);
         }

@@ -14,16 +14,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.14</version>
+        <version>4.1.2</version>
         <relativePath/>
     </parent>
 
     <properties>
         <java.version>17</java.version>
-        <!-- Lombok 1.18.40+ is required to compile on JDK 21+/25 (javac internals changed); still builds on JDK 17. -->
-        <org.projectlombok.version>1.18.42</org.projectlombok.version>
-        <!-- Override the Spring Boot BOM's Byte Buddy so Mockito can instrument JDK 25 bytecode; still works on JDK 17. -->
-        <byte-buddy.version>1.17.6</byte-buddy.version>
         <start-class>at.rtr.rmbt.map.MapServerConfiguration</start-class>
         <!-- Set outputTimestamp explicitly to the build time: newer Maven versions default it to
              1980-02-01T00:00:00Z, which git-commit-id then reports as git.build.time in /version. -->
@@ -34,7 +30,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.6</version>
+            <version>3.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -43,7 +39,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -134,7 +130,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>${org.projectlombok.version}</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

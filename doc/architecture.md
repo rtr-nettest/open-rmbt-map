@@ -47,12 +47,12 @@ Where this server sits among the RMBT components:
 ## 2. Technology stack
 
 - **Language / runtime:** Java 17.
-- **Framework:** Spring Boot 3.x (Spring MVC, Spring Data JPA, Spring Cache). **No Spring
+- **Framework:** Spring Boot 4.1 (Spring MVC, Spring Data JPA, Spring Cache). **No Spring
   Security.**
 - **Packaging / hosting:** a **WAR** (`<packaging>war</packaging>`) deployed into external
-  **Tomcat 10**. `MapServerConfiguration` is the `@SpringBootApplication` and extends
+  **Tomcat 11** (Servlet 6.1, required by Spring Boot 4). `MapServerConfiguration` is the `@SpringBootApplication` and extends
   `SpringBootServletInitializer`; it also has a `main()` for IDE run/debug.
-- **Database:** PostgreSQL + **PostGIS** (read access to the shared RMBT DB). Hibernate 6 / Spring
+- **Database:** PostgreSQL + **PostGIS** (read access to the shared RMBT DB). Hibernate 7 / Spring
   Data JPA for the one mapped entity; **native spatial SQL** for the tile/marker/info queries.
   **hibernate-spatial** + **postgis-jdbc**. No Flyway.
 - **Caching:** **Redis** (`spring-data-redis` + Jedis; Lettuce excluded) behind Spring Cache. Used
@@ -331,7 +331,7 @@ mindful that regeneration runs off the request thread.
   - Redis: `MAP_REDIS_HOST` / `MAP_REDIS_PORT`.
   - CORS origin; logging (`LOG_HOST`, `LOG_PORT`, `LOGGING_HOST`).
 - **External runtime dependencies:** a reachable PostgreSQL+PostGIS (read) and a Redis instance.
-- **Build / deploy:** `mvn clean package` → WAR → Tomcat 10 (`webapps/RMBTMapServer.war`),
+- **Build / deploy:** `mvn clean package` → WAR → Tomcat 11 (`webapps/RMBTMapServer.war`),
   Java 17.
 - **Local run/debug:** run `MapServerConfiguration.main()`; point it at a local DB (with geolocated
   data) and a local Redis. Hitting

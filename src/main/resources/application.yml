@@ -30,6 +30,8 @@ spring:
       ddl-auto: none
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   jackson:
+    # Spring Boot 4 uses Jackson 3; keep the Jackson 2 defaults (e.g. property order) so the JSON API output is unchanged
+    use-jackson2-defaults: true
     deserialization:
       fail-on-unknown-properties: true
 redis:
