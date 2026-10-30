@@ -73,6 +73,9 @@ public class FiltersService {
         return response;
     }
 
+    /** Map type group for the signal measurement (fences) layers. */
+    private static final String COVERAGE_GROUP = "coverage";
+
     //Download, upload, ping, signal
     private MapFiltersResponse.MapFilter getMapTypeList(ResourceBundle labels) {
         String lastType = null;
@@ -93,18 +96,22 @@ public class FiltersService {
             final String key = entry.getKey();
             final MapServerOptions.MapOption mapOption = entry.getValue();
             final String[] split = key.split("/");
+            // signal measurement (fences) layers get their own group instead of being listed under "mobile"
+            final String group = mapOption.isFences ? COVERAGE_GROUP : split[0];
 
-            if (lastType == null || !lastType.equals(split[0])) {
-                lastType = split[0];
+            if (lastType == null || !lastType.equals(group)) {
+                lastType = group;
                 subOption = new MapFiltersResponse.Option();
                 subOption.setTitle(labels.getString(String.format("MAP_%s", lastType.toUpperCase())));
-                subOption.addParameter("map_type_is_mobile", lastType.equalsIgnoreCase("MOBILE"));
+                subOption.addParameter("map_type_is_mobile", mapOption.isFences || lastType.equalsIgnoreCase("MOBILE"));
                 mapTypeOption.addOption(subOption);
             }
 
             final String type = split[1].toUpperCase();
             final MapFiltersResponse.Option subOptionItem = new MapFiltersResponse.Option();
-            subOptionItem.setTitle(labels.getString(String.format("RESULT_%s", type)));
+            subOptionItem.setTitle(labels.getString(mapOption.isFences
+                    ? String.format("MAP_%s_%s", COVERAGE_GROUP.toUpperCase(), type)
+                    : String.format("RESULT_%s", type)));
             subOptionItem.setSummary(labels.getString(String.format("MAP_%s_SUMMARY", type)));
             subOptionItem.addParameter("map_options", key);
             if ("mobile/download".equals(key)) {

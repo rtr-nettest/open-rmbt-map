@@ -410,17 +410,6 @@ final public class MapServerOptions
                             Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
                             "heatmap",
                             false));
-            put("mobile/fences", new MapOption("f.signal",
-                    "f.signal",
-                    "(f.signal is not null or technology_id = " + Constants.TECHNOLOGY_OFFLINE + ")",
-                    colors_fences,
-                    intervals_fences,
-                    captions_fences,
-                    Classification.THRESHOLD_SIGNAL_MOBILE,
-                    Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
-                    "heatmap",
-                    false,
-                    true));
             // same as mobile/fences, but showing the technology only (always at full color)
             put("mobile/technology", new MapOption("f.signal",
                     "f.signal",
@@ -433,6 +422,17 @@ final public class MapServerOptions
                     "heatmap",
                     false,
                     true,
+                    true));
+            put("mobile/fences", new MapOption("f.signal",
+                    "f.signal",
+                    "(f.signal is not null or technology_id = " + Constants.TECHNOLOGY_OFFLINE + ")",
+                    colors_fences,
+                    intervals_fences,
+                    captions_fences,
+                    Classification.THRESHOLD_SIGNAL_MOBILE,
+                    Classification.THRESHOLD_SIGNAL_MOBILE_CAPTIONS,
+                    "heatmap",
+                    false,
                     true));
 
             put("wifi/download", new MapOption("speed_download",
